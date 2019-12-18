@@ -1,0 +1,2 @@
+*.user.js filter=version
+*.lib.js filter=version
