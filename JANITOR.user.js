@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        JANITOR - Java API Navigation Is The Optimal Rescue
+// @name        JANITOR – Java API Navigation Is The Optimal Rescue
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
 // @version     19.12.17
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
@@ -74,7 +74,7 @@ TODO
 	[['Module',"purple"],['Package',"black"],['Interface',"dodgerblue"],['Class',"blue"],['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] )
   //--------------------------
 
-  const DEV = true // set to >true< while developing
+  const DEV = false // set to >true< while developing
   const DEBUG = false // set to >true< for debugging
   const SEARCH = "/api"
   const API_URL = document.URL.substring( 0, document.URL.indexOf(SEARCH) + SEARCH.length );
