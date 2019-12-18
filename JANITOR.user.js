@@ -116,6 +116,7 @@ function JANITOR() {
 	console.error(e)
   }
 
+} // JANITOR
 
   /** Add tree nodes of given type from given URL to given parent.
  	*/
@@ -274,4 +275,4 @@ function JANITOR() {
 
   } // addTypes()
 
-} //)()
+//})()
