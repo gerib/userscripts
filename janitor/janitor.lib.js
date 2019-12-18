@@ -5,10 +5,10 @@
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
-// @homepage    https://github.com/gerib/userscripts/wiki
+// @homepage    https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue
 // @supportURL  https://github.com/gerib/userscripts/issues
-// @downloadURL https://github.com/gerib/userscripts/raw/master/JANITOR.lib.js
-// @updateURL   https://github.com/gerib/userscripts/raw/master/JANITOR.lib.js
+// @downloadURL https://github.com/gerib/userscripts/raw/master/janitor.lib.js
+// @updateURL   https://github.com/gerib/userscripts/raw/master/janitor.lib.js
 // --------------------------------------------------
 // @namespace   igb
 // @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][1-9]\/docs\/api\/.*/
@@ -44,7 +44,6 @@
  * @see 'How to place div side by side' <https://stackoverflow.com/a/24292602/1744774>
  * @see 'How to create a collapsing tree table in html/css/js?' <https://stackoverflow.com/a/36222693/1744774>
  *
- *
  * NOTE
  *
  *   This script doesn't work in Chrome (79.0.3945.88) yet since Chrome JavaScript's href() returns an absoulute path
@@ -59,12 +58,10 @@
  *   while the following is correct and necessary:
  *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/module-summary.html
  *
- *
  * TODO
  *   - Test with other browsers than Firefox v71
  *   - Test with other userscript add-ons than Tampermonkey v4.9
  *   - Solve Chrome issue as described in NOTE above
- *
  */
 
 // (function() {
