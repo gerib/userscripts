@@ -8,11 +8,11 @@
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
 // @homepage    https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue
 // @supportURL  https://github.com/gerib/userscripts/issues
-// @downloadURL https://github.com/gerib/userscripts/raw/master/janitor.user.js
-// @updateURL   https://github.com/gerib/userscripts/raw/master/janitor.user.js
+// @downloadURL https://github.com/gerib/userscripts/blob/master/janitor/janitor.user.js
+// @updateURL   https://github.com/gerib/userscripts/blob/master/janitor/janitor.user.js
 // ---------------------------------------------------------
 // @namespace   igb
-// @require     https://github.com/gerib/userscripts/raw/master/janitor/janitor.lib.js
+// @require     https://github.com/gerib/userscripts/blob/master/janitor/janitor.lib.js
 // @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][1-9]\/docs\/api\/.*/
 // @run-at      document-idle
 // @grant       none
