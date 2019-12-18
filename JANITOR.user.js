@@ -63,9 +63,7 @@ TODO
   - Solve Chrome issue as described in NOTE above
 */
 
-//(
-function JANITOR() {
-  'use strict'
+//(function() {
 
   //--------------------------
   // Customize to your liking
@@ -86,6 +84,9 @@ function JANITOR() {
 	? [['Module',"Ⓜ"],['Package',"Ⓟ"],['Interface',"Ⓘ"],['Class',"Ⓒ"],['Enum',"Ⓔ<sub>n</sub>"],['Exception',"Ⓔ<sub>x</sub>"],['Error',"Ⓔ<sub>r</sub>"],['Annotation',"Ⓐ"]]
 	: [['Module',"M"],['Package',"P"],['Interface',"I"],['Class',"C"],['Enum',"E<sub>n</sub>"],['Exception',"E<sub>x</sub>"],['Error',"E<sub>r</sub>"],['Annotation',"A"]]
   )
+
+  function JANITOR() {
+  	'use strict'
 
   try {
 	console.log("BEGIN Java 10+ API Tree Navigation...");
@@ -116,7 +117,7 @@ function JANITOR() {
 	console.error(e)
   }
 
-} // JANITOR
+} // JANITOR()
 
   /** Add tree nodes of given type from given URL to given parent.
  	*/
