@@ -73,7 +73,7 @@ TODO
 	[['Module',"purple"],['Package',"black"],['Interface',"dodgerblue"],['Class',"blue"],['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] )
   //--------------------------
 
-  const DEV = false // set to >true< while developing
+  let DEV = false // set to >true< while developing
   const DEBUG = false // set to >true< for debugging
   const SEARCH = "/api"
   const API_URL = document.URL.substring( 0, document.URL.indexOf(SEARCH) + SEARCH.length );
@@ -167,7 +167,7 @@ TODO
 		  a.title = aTitle
 		summary.innerHTML = `<span title="${aTitle}" style="cursor: default;">${branch} &nbsp;</span>`
 
-		summary.addEventListener( 'click', function(event) {
+		summary.addEventListener( 'click', function() {
 		  ofType === 'Module'
 			? addModulesOrPackages( 'Package', a.href, details, a.innerText, 0 )
 		  : addTypes( 'Interface', a.href, details, parentName, a.innerText, -1, 0 )
@@ -198,15 +198,15 @@ TODO
 
   /** Add tree nodes of given type from given URL to given parent.
  	*/
-  function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount, summaryIdx ) {
-	//if (DEV) console.debug("addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent, "count:", typeCount, "idx:", summaryIdx)
+  function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount ) {
+	//if (DEV) console.debug("addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent, "count:", typeCount)
 
 	const types = "'Interface', 'Class', 'Enum', 'Exception', 'Error', 'Annotation'"
 	if ( types.search( ofType ) < 0 )
 	  throw `function addTypes(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`;
 
 	const page = new XMLHttpRequest()
-	page.addEventListener('load', function(event) {
+	page.addEventListener('load', function( event ) {
 	  if (DEBUG) console.debug(event)
 	  if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)
 
