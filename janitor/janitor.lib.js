@@ -260,7 +260,7 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 
 				// highlight tree of current type page
 				if ( highlight ) {
-					//toParent.firstChild.style.fontWeight = 'bold'
+					toParent.firstChild.style.fontWeight = 'bold'
 					a.style.fontWeight = 'bold'
 				}
 
