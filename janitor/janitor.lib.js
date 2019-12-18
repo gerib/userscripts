@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        JANITOR – Java API Navigation Is The Optimal Rescue (lib)
+// @name        JANITOR – Java API Navigation Is The Only Rescue (lib)
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
 // @version     19.12.18
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
