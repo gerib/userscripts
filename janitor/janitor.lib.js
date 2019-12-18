@@ -186,7 +186,7 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 			if ( document.URL.includes( a.innerText ) || // module
 			     document.URL.includes( a.innerText.replace(/\./g, "/") + "/p") // package
     	   ) {
-				a.style.fontWeight = 'bold'
+				summary.style.fontWeight = 'bold'
 				summary.click()
 			}
 			const span = document.querySelector('span.packageLabelInType')
@@ -259,7 +259,7 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 				// highlight tree of current type page
 				if ( document.URL.includes( a.innerText + ".html" ) ) {
 					toParent.firstChild.style.fontWeight = 'bold'
-						a.style.fontWeight = 'bold'
+					summary.style.fontWeight = 'bold'
 				}
 
 			} // for ( links )
