@@ -63,7 +63,8 @@ TODO
   - Solve Chrome issue as described in NOTE above
 */
 
-(function() {
+//(
+function JANITOR() {
   'use strict'
 
   //--------------------------
@@ -273,4 +274,4 @@ TODO
 
   } // addTypes()
 
-})()
+} //)()
