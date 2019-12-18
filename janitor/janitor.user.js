@@ -1,25 +1,15 @@
-// ==UserScript==
-// @name        JANITOR – Java API Navigation Is The Only Rescue
-// @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     19.12.18
-// @namespace   igb
-// @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
-// @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
-// @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
-// @homepage    https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue
-// @supportURL  https://github.com/gerib/userscripts/issues
-// @downloadURL https://github.com/gerib/userscripts/blob/master/janitor/janitor.user.js
-// @updateURL   https://github.com/gerib/userscripts/blob/master/janitor/janitor.user.js
-// ---------------------------------------------------------
-// @namespace   igb
-// @require     https://raw.githubusercontent.com/gerib/userscripts/master/janitor/janitor.lib.js
-// @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][1-9]\/docs\/api\/.*/
-// @run-at      document-idle
-// @grant       none
-// ==/UserScript==
+ Volume in Laufwerk C: hat keine Bezeichnung.
+ Volumeseriennummer: 3CE5-A8E7
 
-/* globals JANITOR */// See 'Tampermonkey jQuery require not working' <https://stackoverflow.com/a/55959345/1744774>
-( function() {
-	'use strict'
-	JANITOR()
-} )()
+ Verzeichnis von C:\Users\Geri\_dev\eclipse.wksp.geri\userscripts
+
+18.12.2019  23:32    <DIR>          .
+18.12.2019  23:32    <DIR>          ..
+18.12.2019  23:35                51 .gitattributes
+18.12.2019  23:28               402 .project
+18.12.2019  23:28    <DIR>          .settings
+18.12.2019  23:28    <DIR>          janitor
+18.12.2019  23:28            35.149 LICENSE
+18.12.2019  23:28               133 README.md
+               4 Datei(en),         35.735 Bytes
+               4 Verzeichnis(se), 63.769.780.224 Bytes frei
