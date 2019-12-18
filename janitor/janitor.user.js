@@ -12,7 +12,7 @@
 // @updateURL   https://github.com/gerib/userscripts/blob/master/janitor/janitor.user.js
 // ---------------------------------------------------------
 // @namespace   igb
-// @require     https://github.com/gerib/userscripts/blob/master/janitor/janitor.lib.js
+// @require     https://raw.githubusercontent.com/gerib/userscripts/master/janitor/janitor.lib.js
 // @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][1-9]\/docs\/api\/.*/
 // @run-at      document-idle
 // @grant       none
