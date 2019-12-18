@@ -59,6 +59,8 @@
  *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/module-summary.html
  *
  * TODO
+ *   - If a type's page is displayed (e.g. ModulElement) and some other type with its name being a part of the
+ *     selected type's name (e.g. Element) exists, the tree node of the second type is wrongly highlighted, too.
  *   - Test with other browsers than Firefox v71
  *   - Test with other userscript add-ons than Tampermonkey v4.9
  *   - Solve Chrome issue as described in NOTE above
