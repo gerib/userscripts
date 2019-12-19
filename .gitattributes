@@ -1,2 +1,3 @@
-*.user.js filter=version
-*.lib.js filter=version
+# See https://git-scm.com/book/en/v2/Customizing-Git-Git-Attributes#_keyword_expansion
+*.user.js filter=set-userscript-version
+*.lib.js filter=set-userscript-version
