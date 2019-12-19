@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue (lib)
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     19.12.19-0032
+// @version     19.12.19-173343
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -99,6 +99,8 @@ function JANITOR() {
 		const container = document.createElement('div')
 		container.id = 'nav&mainContainer'
 		container.style.display = 'flex'
+		// see How to get the browser viewport dimensions? <https://stackoverflow.com/a/8876069/1744774>
+		container.style.height = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
 		const nav = document.createElement('div')
 		nav.id = 'nav'
@@ -249,7 +251,7 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 				a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.href}`
 				const aTitle = `${ofType} ${a.innerText}`
 				a.title = aTitle
-				const highlight = document.URL.includes( a.innerText + ".html" ) 
+				const highlight = document.URL.includes( a.innerText + ".html" )
 				const icon = `<span style='color:${COLORS.get( ofType )};${highlight ? 'font-weight:bold': ''}'>${ICONS.get( ofType )}</span>`
 				const branch = `&nbsp; &nbsp; ･&nbsp; &nbsp;&thinsp;${--typeCount > 0 ? "├" : "└"}─ ${icon}`
 				summary.innerHTML = `<span title='${aTitle}' style='cursor:default;'>${branch} &nbsp;</span>` //
@@ -284,4 +286,3 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 
 } // addTypes()
 
-// })()

@@ -1,13 +1,15 @@
 @echo off
+
 setlocal EnableDelayedExpansion
 
-for /f "usebackq delims=" %%l in ("%1") do (
+for /f "tokens=*" %%l in ( 'findstr /n $' ) do (
 	set line=%%l
-	set version=!line:~0,12!
+	set version=!line:~2,12!
 	if "!version!"=="// @version " (
 	  echo // ^@version     %date:~4,8%-%time:~0,2%%time:~3,2%%time:~6,2%
 	) else (
-	  echo !line!
+	  set line=!line:*:=!
+	  echo:!line!
 	)
 )
 

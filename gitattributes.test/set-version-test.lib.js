@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         version-test.lib.js
 // @namespace    http://tampermonkey.net/
-// @version      0.0.0
-// @description  try to take over the world!
+// @version      19.12.19-173030
+// @description  try to take over the world
 // @author       You
 // @match        http://*/*
 // @grant        none
