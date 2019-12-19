@@ -2,6 +2,7 @@
 
 setlocal EnableDelayedExpansion
 
+:: See: Read stdin stream in a batch file <https://stackoverflow.com/a/6980605/1744774>
 for /f "tokens=*" %%l in ( 'findstr /n $' ) do (
 	set line=%%l
 	set version=!line:~2,12!
