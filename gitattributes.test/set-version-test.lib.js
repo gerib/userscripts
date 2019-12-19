@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         version-test.lib.js
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.0.0
 // @description  try to take over the world!
 // @author       You
 // @match        http://*/*
