@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue (lib)
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     20.12.20-1520
+// @version     20.12.20-1750
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -30,6 +30,7 @@
  *
  *  <body>
  *    <div id="nav&mainContainer" style="display: flex;">
+ *      <div>{title}
  *      <div id="nav" style="width: ${NAV_WIDTH};">
  *        <details>*¹ | <div>*²
  *          <summary>*¹ | <span>*²
@@ -37,7 +38,7 @@
  *              <span>{icon}
  *                <a href='{module, package or type page}'>{module, package or type name}</a>
  *      <header>
- *      <main style="flex-grow: 1;">
+ *      <main>
  *    <footer>
  *
  *  ¹ for modules and packages
@@ -64,7 +65,7 @@
  * TODO
  *   - If a type node is the current node (e.g. ModulElement) and some other type with its name being a part of the
  *     current type's name (e.g. Element) exists, the tree node of the part-name type is wrongly highlighted, too.
- *   - Higlight package node if current node is type node.
+ *   - Highlight package node if current node is type node.
  *   - Test with other browsers than Firefox v71.
  *   - Test with other userscript add-ons than Tampermonkey v4.9.
  *   - Solve Chrome issue as described in NOTE above.

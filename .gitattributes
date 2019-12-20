@@ -1,11 +1,12 @@
+
 # See https://git-scm.com/book/en/v2/Customizing-Git-Git-Attributes#_keyword_expansion
 #
-# This works but has one disadvantage:
+# This works but has disadvantages:
 #
-#   The @version is updated in the staged (and later committed) files only. That means:
-#
+#   The @version is updated in staged (and later committed) files only.
+#   That means:
 #     1. there is always a difference between working tree and index
 #     2. the working tree does not contain the latest source (with the current @version)
-#
+
 #*.user.js filter=set-userscript-version
 #*.lib.js filter=set-userscript-version
