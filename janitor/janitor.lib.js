@@ -17,6 +17,8 @@
 // ==/UserScript==
 
 /**
+ * Inspired by »Missing iFrame view for Javadocs JDK 11 / 12« <https://stackoverflow.com/q/51992347/1744774>.
+ *
  * The original DOM:
  *
  *   <body>
@@ -41,8 +43,9 @@
  *  ¹ for modules and packages
  *  ² for types
  *
- * @see 'How to place div side by side' <https://stackoverflow.com/a/24292602/1744774>
- * @see 'How to create a collapsing tree table in html/css/js?' <https://stackoverflow.com/a/36222693/1744774>
+ * @see »How to place div side by side« <https://stackoverflow.com/a/24292602/1744774>
+ * @see »How to create a collapsing tree table in html/css/js?« <https://stackoverflow.com/a/36222693/1744774>
+ * @see »<div> with absolute position in the viewport when scrolling the page vertically« <https://stackoverflow.com/q/59417589/1744774>
  *
  * NOTE
  *
@@ -96,7 +99,7 @@ function JANITOR() {
   try {
 	console.log("BEGIN Java 11+ API Tree Navigation...");
 
-	// Add navigation tree
+	// Create navigation tree
 	const container = document.createElement('div')
 	container.id = 'nav&mainContainer'
 	container.style.display = 'flex'
@@ -117,7 +120,7 @@ function JANITOR() {
 	const nav = document.createElement('div')
 	nav.id = 'nav'
 	nav.style.width = NAV_WIDTH
-	// see How to get the browser viewport dimensions? <https://stackoverflow.com/a/8876069/1744774>
+	// See »How to get the browser viewport dimensions?« <https://stackoverflow.com/a/8876069/1744774>
 	nav.style.height = `${ Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28 }px`
 	nav.style.top = '24px'
 	nav.style.position = 'fixed'
@@ -126,7 +129,9 @@ function JANITOR() {
 	nav.style.paddingTop = '3px'
 	container.appendChild( nav )
 
+	// Rearrange existing elements
 	const header = document.getElementsByTagName('header')[0]
+	// Add navigation to DOM
 	header.nextElementSibling.parentNode.insertBefore(container, header.nextElementSibling)
 	header.style.marginLeft = NAV_WIDTH
 	document.querySelector('div.fixedNav').style.width = 'auto'
@@ -135,7 +140,6 @@ function JANITOR() {
 	const main = document.getElementsByTagName('main')[0]
 	main.style.flex = 1
 	container.appendChild( main )
-
 	document.getElementsByTagName('footer')[0].style.marginLeft = NAV_WIDTH
 
 	addModulesOrPackages( 'Module', API_URL, nav, '' )
