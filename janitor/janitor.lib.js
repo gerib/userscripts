@@ -17,7 +17,7 @@
 // ==/UserScript==
 
 /**
- * Inspired by »Missing iFrame view for Javadocs JDK 11 / 12« <https://stackoverflow.com/q/51992347/1744774>.
+ * Inspired by »Missing iFrame view for Javadocs JDK 11+« <https://stackoverflow.com/q/51992347/1744774>.
  *
  * The original DOM:
  *
