@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     20.12.20-1500
+// @version     20.12.20-1520
 // @namespace   igb
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
@@ -13,7 +13,7 @@
 // ---------------------------------------------------------
 // @namespace   igb
 // @require     https://raw.githubusercontent.com/gerib/userscripts/master/janitor/janitor.lib.js
-// @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][1-9]\/docs\/api\/.*/
+// @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][0-9]\/docs\/api\/.*/
 // @run-at      document-idle
 // @grant       none
 // ==/UserScript==
