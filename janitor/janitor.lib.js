@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue (lib)
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     20.12.20-1400
+// @version     20.12.20-1415
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -80,12 +80,10 @@ const COLORS = new Map(
    ['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] )
 //----------------------------------------------------------------------------------------
 
-const DEV = false // set to >true< while developing
-const DEBUG = false // set to >true< for debugging
-const SEARCH = "/api"
-const API_URL = document.URL.substring( 0, document.URL.indexOf(SEARCH) + SEARCH.length );
+const DEV = false // set to »true« while developing
+const DEBUG = false // set to »true« for debugging
+const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length );
 const ASYNC = true
-
 const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
 					  ? [['Module',"Ⓜ"],['Package',"Ⓟ"],['Interface',"Ⓘ"],['Class',"Ⓒ"],['Enum',"Ⓔ<sub>n</sub>"],
 						 ['Exception',"Ⓔ<sub>x</sub>"],['Error',"Ⓔ<sub>r</sub>"],['Annotation',"Ⓐ"]]
@@ -97,7 +95,7 @@ const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
 function JANITOR() {
 
   try {
-	console.log("BEGIN Java 11+ API Tree Navigation...");
+	console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue (lib)...");
 
 	// Create navigation tree
 	const container = document.createElement('div')
@@ -110,6 +108,7 @@ function JANITOR() {
 	title.style.borderBottom = '1px solid'
 	title.style.padding = '3px'
 	title.style.textAlign = 'center'
+
 	const a = document.createElement('a')
 	a.href = 'https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue'
 	a.innerText = "JANITOR – Java API Navigation Is The Only Rescue"
@@ -131,10 +130,10 @@ function JANITOR() {
 
 	// Rearrange existing elements
 	const header = document.getElementsByTagName('header')[0]
-	// Add navigation to DOM
-	header.nextElementSibling.parentNode.insertBefore(container, header.nextElementSibling)
 	header.style.marginLeft = NAV_WIDTH
 	document.querySelector('div.fixedNav').style.width = 'auto'
+	// Add navigation to DOM
+	header.nextElementSibling.parentNode.insertBefore(container, header.nextElementSibling)
 	container.appendChild(header)
 
 	const main = document.getElementsByTagName('main')[0]
@@ -143,7 +142,7 @@ function JANITOR() {
 
 	addModulesOrPackages( 'Module', API_URL, nav, '' )
 
-	console.log("END Java 11+ API Tree Navigation.")
+	console.log("END JANITOR – Java API Navigation Is The Only Rescue (lib).")
   }
   catch (e) {
 	console.error(e)
@@ -168,9 +167,9 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 	if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)
 
 	// responseXML == null with error message:
-	// XML-Error: Not matching tag. Expected: </script>.
-	// Line No. xx, Column yyy
-	// therefore creating a new document from responseText:
+	//   XML-Error: Not matching tag. Expected: </script>.
+	//   Line No. xx, Column yyy
+	// therefore creating a new document from responseText
 	const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
 	doc.open()
 	doc.write( page.responseText )
@@ -248,7 +247,7 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 	// responseXML == null with error message:
 	//   XML-Error: Not matching tag. Expected: </script>.
 	//   Line No. xx, Column yyy
-	// therefore creating a new document from responseText:
+	// therefore creating a new document from responseText
 	const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
 	doc.open()
 	doc.write( page.responseText )
