@@ -1,6 +1,6 @@
 # userscripts
-Tampermonkey, Greasemonkey, etc. userscripts 
+Tampermonkey, Greasemonkey, etc. userscripts
 
-See [Wiki] for more.
+See [Wiki][wiki] for more.
 
 [wiki]: https://github.com/gerib/userscripts/wiki
