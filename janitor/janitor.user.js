@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     20.12.20-1415
+// @version     20.12.20-1500
 // @namespace   igb
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
@@ -18,7 +18,7 @@
 // @grant       none
 // ==/UserScript==
 
-/* globals JANITOR */// See 'Tampermonkey jQuery require not working' <https://stackoverflow.com/a/55959345/1744774>
+/* globals JANITOR */// See »Tampermonkey jQuery require not working« <https://stackoverflow.com/a/55959345/1744774>
 ( function() {
 	'use strict'
 
