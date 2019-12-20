@@ -38,7 +38,7 @@
  *                <a href='{module, package or type page}'>{module, package or type name}</a>
  *      <header>
  *      <main style="flex-grow: 1;">
- *      <footer>
+ *    <footer>
  *
  *  ¹ for modules and packages
  *  ² for types
@@ -138,7 +138,6 @@ function JANITOR() {
 	container.appendChild(header)
 
 	const main = document.getElementsByTagName('main')[0]
-	main.style.flex = 1
 	container.appendChild( main )
 	document.getElementsByTagName('footer')[0].style.marginLeft = NAV_WIDTH
 
