@@ -88,7 +88,7 @@ const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
 		: [['Module',"M"],['Package',"P"],['Interface',"I"],['Class',"C"],['Enum',"E<sub>n</sub>"],
 		   ['Exception',"E<sub>x</sub>"],['Error',"E<sub>r</sub>"],['Annotation',"A"]] )
 
-JANITOR() // for developing
+//JANITOR() // for developing
 
 function JANITOR() {
 
