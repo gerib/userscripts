@@ -65,7 +65,6 @@
  * TODO
  *   - If a type node is the current node (e.g. ModulElement) and some other type with its name being a part of the
  *     current type's name (e.g. Element) exists, the tree node of the part-name type is wrongly highlighted, too.
- *   - Highlight package node if current node is type node.
  *   - Test with other browsers than Firefox v71.
  *   - Test with other userscript add-ons than Tampermonkey v4.9.
  *   - Solve Chrome issue as described in NOTE above.
@@ -180,7 +179,7 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 		const selector = ofType === 'Module'
 			? '.overviewSummary th > a' // Java 11: <table>, Java 12+: <div>
 			: '.packagesSummary th > a' // Java 11: <table>, Java 12+: <div>
-  
+
 		const links = doc.querySelectorAll(`${selector}`)
 		let nodeCount = links.length
 		if (DEV) console.debug("addModulesOrPackages(): Links for", ofType + "s in", parentName, links)
@@ -289,7 +288,7 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 
 				// highlight tree of current type page
 				if ( highlight ) {
-					//toParent.firstChild.style.fontWeight = 'bold'
+			  		details.parentNode.firstChild.style.fontWeight = 'bold'
 					a.style.fontWeight = 'bold'
 				}
 
