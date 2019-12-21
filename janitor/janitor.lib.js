@@ -30,15 +30,15 @@
  *
  *  <body>
  *    <div id="nav&mainContainer" style="display: flex;">
- *      <div>{title}
- *      <div id="nav" style="width: ${NAV_WIDTH};">
- *        <details>*¹ | <div>*²
- *          <summary>*¹ | <span>*²
- *            <span>{branch}
- *              <span>{icon}
- *                <a href='{module, package or type page}'>{module, package or type name}</a>
- *      <header>
- *      <main>
+ *    | <div style="position: fixed; width: ${NAV_WIDTH};">{title}
+ *    | <div id="nav" style="position: fixed; width: ${NAV_WIDTH};">
+ *    | | <details>*¹ | <div>*²
+ *    | |   <summary>*¹ | <span>*²
+ *    | |     <span>{branch}
+ *    | |       <span>{icon}
+ *    | |         <a href='{module, package or type page}'>{module, package or type name}</a>
+ *    | <header>
+ *    | <main>
  *    <footer>
  *
  *  ¹ for modules and packages
@@ -98,7 +98,6 @@ function JANITOR() {
 		// Create navigation tree
 		const container = document.createElement('div')
 		container.id = 'nav&mainContainer'
-		container.style.display = 'flex'
 
 		const title = document.createElement('div')
 		title.style.position = 'fixed'
@@ -135,6 +134,7 @@ function JANITOR() {
 		container.appendChild(header)
 
 		const main = document.getElementsByTagName('main')[0]
+		main.style.marginLeft = NAV_WIDTH
 		container.appendChild( main )
 		document.getElementsByTagName('footer')[0].style.marginLeft = NAV_WIDTH
 
