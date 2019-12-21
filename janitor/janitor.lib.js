@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue (lib)
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     20.12.20-1750
+// @version     20.12.21-1545
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -63,8 +63,6 @@
  *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/module-summary.html
  *
  * TODO
- *   - If a type node is the current node (e.g. ModulElement) and some other type with its name being a part of the
- *     current type's name (e.g. Element) exists, the tree node of the part-name type is wrongly highlighted, too.
  *   - Test with other browsers than Firefox v71.
  *   - Test with other userscript add-ons than Tampermonkey v4.9.
  *   - Solve Chrome issue as described in NOTE above.
@@ -90,7 +88,7 @@ const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
 		: [['Module',"M"],['Package',"P"],['Interface',"I"],['Class',"C"],['Enum',"E<sub>n</sub>"],
 		   ['Exception',"E<sub>x</sub>"],['Error',"E<sub>r</sub>"],['Annotation',"A"]] )
 
-//JANITOR() // for developing
+JANITOR() // for developing
 
 function JANITOR() {
 
@@ -277,7 +275,7 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 				a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.href}`
 				const aTitle = `${ofType} ${a.innerText}`
 				a.title = aTitle
-				const highlight = document.URL.includes( a.innerText + ".html" )
+				const highlight = document.URL.includes( `/${a.innerText}.html` )
 				const icon = `<span style='color:${COLORS.get( ofType )};${highlight ? 'font-weight:bold': ''}'>${ICONS.get( ofType )}</span>`
 				const branch = `&nbsp; &nbsp; ･&nbsp; &nbsp;&thinsp;${--typeCount > 0 ? "├" : "└"}─ ${icon}`
 				summary.innerHTML = `<span title='${aTitle}' style='cursor:default;'>${branch} &nbsp;</span>` //
