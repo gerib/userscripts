@@ -74,7 +74,7 @@
 const NAV_WIDTH = '30em'
 const TYPE_LETTERS_IN_CIRCLE = true
 const COLORS = new Map(
-		[['Module',"purple"],['Package',"black"],['Interface',"dodgerblue"],['Class',"blue"],
+		[['Module',"black"],['Package',"purple"],['Interface',"dodgerblue"],['Class',"blue"],
 		['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] )
 //----------------------------------------------------------------------------------------
 
