@@ -14,4 +14,6 @@ for /f "tokens=*" %%l in ( 'findstr /n $' ) do (
 	)
 )
 
+git checkout
+
 endlocal
