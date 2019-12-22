@@ -63,7 +63,7 @@
  *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/module-summary.html
  *
  * TODO
- *   - java.lang.Enum appears threefold in the types' navigation
+ *   - Types with the same (linked) type parameter(s) (e.g. java.lang.Enum) appear manifold in the types' navigation.
  *   - Test with other browsers than Firefox v71.
  *   - Test with other userscript add-ons than Tampermonkey v4.9.
  *   - Solve Chrome issue as described in NOTE above.
