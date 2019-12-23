@@ -1,203 +1,207 @@
-// ==UserScript==  
-// @name        JANITOR – Java API Navigation Is The Only Rescue (lib)  
-// @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.  
-// @version     19.12.23-195612
-// @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>  
-// @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png  
-// @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>  
-// @homepage    https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue  
-// @supportURL  https://github.com/gerib/userscripts/issues  
-// @downloadURL https://raw.githubusercontent.com/gerib/userscripts/master/janitor/janitor.lib.js  
-// @updateURL   https://raw.githubusercontent.com/gerib/userscripts/master/janitor/janitor.lib.js  
-// --------------------------------------------------  
-// @namespace   igb  
-// @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][0-9]\/docs\/api\/.*/  
-// @run-at      document-idle  
-// @grant       none  
-// ==/UserScript==  
+// ==UserScript== 
+// @name        JANITOR – Java API Navigation Is The Only Rescue (lib) 
+// @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+. 
+// @version     19.12.23-231414
+// @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774> 
+// @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png 
+// @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html> 
+// @homepage    https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue 
+// @supportURL  https://github.com/gerib/userscripts/issues 
+// @downloadURL https://raw.githubusercontent.com/gerib/userscripts/master/janitor/janitor.lib.js 
+// @updateURL   https://raw.githubusercontent.com/gerib/userscripts/master/janitor/janitor.lib.js 
+// -------------------------------------------------- 
+// @namespace   igb 
+// @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][0-9]\/docs\/api\/.*/ 
+// @run-at      document-idle 
+// @grant       none 
+// ==/UserScript== 
  
-/**  
- * Inspired by »Missing iFrame view for Javadocs JDK 11+« <https://stackoverflow.com/q/51992347/1744774>.  
- *  
- * The original DOM:  
- *  
- *   <body>  
- *     <header>  
- *     <main>  
- *     <footer>  
- *  
- * is converted to:  
- *  
- *  <body>  
- *    <div id="nav&mainContainer" style="display: flex;">  
- *    | <div style="position: fixed; width: ${NAV_WIDTH};">{title}  
- *    | <div id="nav" style="position: fixed; width: ${NAV_WIDTH};">  
- *    | | <details>*¹ | <div>*²  
- *    | |   <summary>*¹ | <span>*²  
- *    | |     <span>{branch}  
- *    | |       <span>{icon}  
- *    | |         <a href='{module, package or type page}'>{module, package or type name}</a>  
- *    | <header>  
- *    | <main>  
- *    <footer>  
- *  
- *  ¹ for modules and packages  
- *  ² for types  
- *  
- * @see »How to place div side by side« <https://stackoverflow.com/a/24292602/1744774>  
- * @see »How to create a collapsing tree table in html/css/js?« <https://stackoverflow.com/a/36222693/1744774>  
- * @see »<div> with absolute position in the viewport when scrolling the page vertically« <https://stackoverflow.com/q/59417589/1744774>  
- *  
- * NOTE  
- *  
- *   This script doesn't work in Chrome (79.0.3945.88) yet since Chrome JavaScript's a.href property returns an absolute path  
- *   even if <a href='{relative path}'> is defined in the page's HTML. This is OK on the same page but it's not, if  
- *   some other page is loaded via a XMLHttpRequest, as it is done in this script.  
- *  
- *   For instance:  
- *     <a href='java.base/module-summary.html'>  
- *   leads to a a.href path:  
- *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java.base/module-summary.html  
- *                                                        ^^^^^^^^^^ wrong  
- *   while the following is correct and necessary:  
- *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/module-summary.html  
- *  
- * TODO  
- *   - Types with the same (linked) type parameter(s) (e.g. java.lang.Enum) appear manifold in the types' navigation.  
- *   - Test with other browsers than Firefox v71.  
- *   - Test with other userscript add-ons than Tampermonkey v4.9.  
- *   - Solve Chrome issue as described in NOTE above.  
- */  
-'use strict'  
+/** 
+ * Inspired by »Missing iFrame view for Javadocs JDK 11+« <https://stackoverflow.com/q/51992347/1744774>. 
+ * 
+ * The original DOM: 
+ * 
+ *   <body> 
+ *     <header> 
+ *     <main> 
+ *     <footer> 
+ * 
+ * is converted to: 
+ * 
+ *  <body> 
+ *    <div id="nav&mainContainer" style="display: flex;"> 
+ *    | <div style="position: fixed; width: ${NAV_WIDTH};">{title} 
+ *    | <div id="nav" style="position: fixed; width: ${NAV_WIDTH};"> 
+ *    | | <details>*¹ | <div>*² 
+ *    | |   <summary>*¹ | <span>*² 
+ *    | |     <span>{branch} 
+ *    | |       <span>{icon} 
+ *    | |         <a href='{module, package or type page}'>{module, package or type name}</a> 
+ *    | <header> 
+ *    | <main> 
+ *    <footer> 
+ * 
+ *  ¹ for modules and packages 
+ *  ² for types 
+ * 
+ * @see »How to place div side by side« <https://stackoverflow.com/a/24292602/1744774> 
+ * @see »How to create a collapsing tree table in html/css/js?« <https://stackoverflow.com/a/36222693/1744774> 
+ * @see »<div> with absolute position in the viewport when scrolling the page vertically« <https://stackoverflow.com/q/59417589/1744774> 
+ * 
+ * NOTE 
+ * 
+ *   This script doesn't work in Chrome (79.0.3945.88) yet since Chrome JavaScript's a.href property returns an absolute path 
+ *   even if <a href='{relative path}'> is defined in the page's HTML. This is OK on the same page but it's not, if 
+ *   some other page is loaded via a XMLHttpRequest, as it is done in this script. 
+ * 
+ *   For instance: 
+ *     <a href='java.base/module-summary.html'> 
+ *   leads to a a.href path: 
+ *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java.base/module-summary.html 
+ *                                                        ^^^^^^^^^^ wrong 
+ *   while the following is correct and necessary: 
+ *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/module-summary.html 
+ * 
+ * TODO 
+ *   - Solve Chrome issue as described in NOTE above. 
+ *   - Types with the same (linked) type parameter(s) (e.g. java.lang.Enum) appear manifold in the types' navigation. 
+ *   - Test with other browsers than Firefox v71. 
+ *   - Test with other userscript add-ons than Tampermonkey v4.9. 
+ */ 
+'use strict' 
  
-//----------------------------------------------------------------------------------------  
-// Customize to your liking  
-const NAV_WIDTH = '30em'  
-const TYPE_LETTERS_IN_CIRCLE = true  
-const COLORS = new Map(  
-		[['Module',"black"],['Package',"purple"],['Interface',"dodgerblue"],['Class',"blue"],  
-		['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] )  
-//----------------------------------------------------------------------------------------  
-  
-const DEV = false // set to »true« while developing  
-const DEBUG = false // set to »true« for debugging  
-const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length );  
-const ASYNC = true  
-const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE  
-		? [['Module',"Ⓜ"],['Package',"Ⓟ"],['Interface',"Ⓘ"],['Class',"Ⓒ"],['Enum',"Ⓔ<sub>n</sub>"],  
-		   ['Exception',"Ⓔ<sub>x</sub>"],['Error',"Ⓔ<sub>r</sub>"],['Annotation',"Ⓐ"]]  
-		: [['Module',"M"],['Package',"P"],['Interface',"I"],['Class',"C"],['Enum',"E<sub>n</sub>"],  
-		   ['Exception',"E<sub>x</sub>"],['Error',"E<sub>r</sub>"],['Annotation',"A"]] )  
+//---------------------------------------------------------------------------------------- 
+// Customize to your liking 
+const NAV_WIDTH = '30em' 
+const TYPE_LETTERS_IN_CIRCLE = true 
+const COLORS = new Map( 
+		[['Module',"black"],['Package',"purple"],['Interface',"dodgerblue"],['Class',"blue"], 
+		['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] ) 
+//---------------------------------------------------------------------------------------- 
  
-//JANITOR() // for developing  
+const DEV = true // set to »true« while developing 
+const DEBUG = false // set to »true« for debugging 
+const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length ); 
+const ASYNC = true 
+const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE 
+		? [['Module',"Ⓜ"],['Package',"Ⓟ"],['Interface',"Ⓘ"],['Class',"Ⓒ"],['Enum',"Ⓔ<sub>n</sub>"], 
+		   ['Exception',"Ⓔ<sub>x</sub>"],['Error',"Ⓔ<sub>r</sub>"],['Annotation',"Ⓐ"]] 
+		: [['Module',"M"],['Package',"P"],['Interface',"I"],['Class',"C"],['Enum',"E<sub>n</sub>"], 
+		   ['Exception',"E<sub>x</sub>"],['Error',"E<sub>r</sub>"],['Annotation',"A"]] ) 
  
-function JANITOR() {  
+JANITOR() // for developing 
  
-	try {  
-		console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue (lib)...");  
+function JANITOR() { 
  
-		// Create navigation tree  
-		const container = document.createElement('div')  
-		container.id = 'nav&mainContainer'  
+	try { 
+		console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue (lib)..."); 
  
-		const title = document.createElement('div')  
-		title.style.position = 'fixed'  
-		title.style.width = NAV_WIDTH  
-		title.style.borderBottom = '1px solid'  
-		title.style.padding = '3px'  
-		title.style.textAlign = 'center'  
+		// Create navigation tree 
+		const container = document.createElement('div') 
+		container.id = 'nav&mainContainer' 
  
-		const a = document.createElement('a')  
-		a.href = 'https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue'  
-		a.innerText = "JANITOR – Java API Navigation Is The Only Rescue"  
-		a.title = "JANITOR – Java API Navigation Is The Only Rescue"  
-		title.appendChild( a )  
-		container.appendChild( title )  
+		const title = document.createElement('div') 
+		title.style.position = 'fixed' 
+		title.style.width = NAV_WIDTH 
+		title.style.borderBottom = '1px solid' 
+		title.style.padding = '3px' 
+		title.style.textAlign = 'center' 
  
-		const nav = document.createElement('div')  
-		nav.id = 'nav'  
-		nav.style.width = NAV_WIDTH  
-		// See »How to get the browser viewport dimensions?« <https://stackoverflow.com/a/8876069/1744774>  
-		nav.style.height = `${ Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28 }px`  
-		nav.style.top = '24px'  
-		nav.style.position = 'fixed'  
-		//nav.style.borderRight = '1px solid'  
-		nav.style.overflowY = 'scroll'  
-		nav.style.paddingTop = '3px'  
-		container.appendChild( nav )  
+		const a = document.createElement('a') 
+		a.href = 'https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue' 
+		a.innerText = "JANITOR – Java API Navigation Is The Only Rescue" 
+		a.title = "JANITOR – Java API Navigation Is The Only Rescue" 
+		title.appendChild( a ) 
+		container.appendChild( title ) 
  
-		// Rearrange existing elements  
-		const header = document.getElementsByTagName('header')[0]  
-		header.style.marginLeft = NAV_WIDTH  
-		document.querySelector('div.fixedNav').style.width = 'auto'  
-		// Add navigation to DOM  
-		header.nextElementSibling.parentNode.insertBefore(container, header.nextElementSibling)  
-		container.appendChild(header)  
+		const nav = document.createElement('div') 
+		nav.id = 'nav' 
+		nav.style.width = NAV_WIDTH 
+		// See »How to get the browser viewport dimensions?« <https://stackoverflow.com/a/8876069/1744774> 
+		nav.style.height = `${ Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28 }px` 
+		nav.style.top = '24px' 
+		nav.style.position = 'fixed' 
+		//nav.style.borderRight = '1px solid' 
+		nav.style.overflowY = 'scroll' 
+		nav.style.paddingTop = '3px' 
+		container.appendChild( nav ) 
  
-		const main = document.getElementsByTagName('main')[0]  
-		main.style.marginLeft = NAV_WIDTH  
-		container.appendChild( main )  
-		document.getElementsByTagName('footer')[0].style.marginLeft = NAV_WIDTH  
+		// Rearrange existing elements 
+		const header = document.getElementsByTagName('header')[0] 
+		header.style.marginLeft = NAV_WIDTH 
+		document.querySelector('div.fixedNav').style.width = 'auto' 
+		// Add navigation to DOM 
+		header.nextElementSibling.parentNode.insertBefore(container, header.nextElementSibling) 
+		container.appendChild(header) 
  
-		addModulesOrPackages( 'Module', API_URL, nav, '' )  
+		const main = document.getElementsByTagName('main')[0] 
+		main.style.marginLeft = NAV_WIDTH 
+		container.appendChild( main ) 
+		document.getElementsByTagName('footer')[0].style.marginLeft = NAV_WIDTH 
  
-		console.log("END JANITOR – Java API Navigation Is The Only Rescue (lib).")  
+		addModulesOrPackages( 'Module', API_URL, nav, '' ) 
+ 
+		console.log("END JANITOR – Java API Navigation Is The Only Rescue (lib).") 
 	} 
-	catch (e) {  
-		console.error(e)  
+	catch (e) { 
+		console.error(e) 
 	} 
  
-} // JANITOR()  
+} // JANITOR() 
  
  
-/**  
- * Add tree nodes of given type from given URL to given parent.  
- */  
+/** 
+ * Add tree nodes of given type from given URL to given parent. 
+ */ 
 function addModulesOrPackages( ofType, fromURL, toParent, parentName) { 
-	if (DEV) console.debug("addModulesOrPackages():", ofType +"(s)", "for", parentName, "from", fromURL, "to", toParent)  
+	if (DEV) console.debug("addModulesOrPackages():", ofType +"(s)", "for", parentName, "from", fromURL, "to", toParent) 
  
-	const types = "'Module', 'Package'"  
-	if ( types.search( ofType ) < 0 )  
+	const types = "'Module', 'Package'" 
+	if ( types.search( ofType ) < 0 ) 
 		throw `function addModulesOrPackages(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`; 
  
-	const page = new XMLHttpRequest()  
+	const page = new XMLHttpRequest() 
 	page.addEventListener('load', function(event) { 
-		if (DEBUG) console.debug(event)  
-		if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)  
+		if (DEBUG) console.debug(event) 
+		if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML) 
  
-		// responseXML == null with error message:  
-		//   XML-Error: Not matching tag. Expected: </script>.  
-		//   Line No. xx, Column yyy  
-		// therefore creating a new document from responseText  
+		// responseXML == null with error message: 
+		//   XML-Error: Not matching tag. Expected: </script>. 
+		//   Line No. xx, Column yyy 
+		// therefore creating a new document from responseText 
 		const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html'); 
 		doc.open() 
 		doc.write( page.responseText ) 
 		doc.close() 
  
-		// CSS selector for links <ofType> on page denoted by <fromURL>  
-		const selector = ofType === 'Module'  
-			? '.overviewSummary th > a' // Java 11: <table>, Java 12+: <div>  
-			: '.packagesSummary th > a' // Java 11: <table>, Java 12+: <div>  
+		// CSS selector for links <ofType> on page denoted by <fromURL> 
+		const selector = ofType === 'Module' 
+			? '.overviewSummary th > a' // Java 11: <table>, Java 12+: <div> 
+			: '.packagesSummary th > a' // Java 11: <table>, Java 12+: <div> 
  
 		const links = doc.querySelectorAll(`${selector}`) 
-		let nodeCount = links.length  
+		let nodeCount = links.length 
 		if (DEV) console.debug("addModulesOrPackages(): Links for", ofType + "s in", parentName, links) 
  
 		for ( const link of links ) { 
  
 			let branch = `<span style='color:${COLORS.get( ofType )};'>${ICONS.get( ofType )}</span>` 
-			if ( ofType === 'Package' )  
-			branch = `${--nodeCount > 0 ? "├" : "└"}─ ${branch}`  
+			if ( ofType === 'Package' ) 
+			branch = `${--nodeCount > 0 ? "├" : "└"}─ ${branch}` 
  
 			const details = document.createElement('details') 
 			const summary = document.createElement('summary') 
 			const a = link 
 			// Link for modules: https://docs.oracle.com/en/java/javase/1{n}/docs/api/{module.name}/module-summary.html 
 			// Link for packages: https://docs.oracle.com/en/java/javase/1{n}/docs/api/{module.name}/{package/path}/package-summary.html 
-			// TODO: Doesn't work in Chrome (79.0.3945.88) even if this line is commented out. See NOTE above. 
-			if ( a.href.startsWith("http") ) 
-				// See »How to get the nth occurrence in a string?« <https://stackoverflow.com/a/14480366/1744774> 
-				a.href = `${API_URL}/`+ a.href.substr( a.href.split( a.href, 1).join( a.href ).length ) 
+ 
+			// Needed for browsers, like Chrome, the a.href property of which is an absolute path 
+			// even if <a href='{relative path}'> is defined in the page's HTML. 
+			if ( a.href.startsWith("http") ) { 
+				// TODO doesn't work yet for packages 
+				const currentModuleTitle = document.querySelector('h1[title="Module"]').innerText 
+				a.href = a.href.replace( currentModuleTitle.substr( currentModuleTitle.indexOf("&nbsp;") + 8 ), "" ) 
+			} 
 			else 
 				a.href = `${API_URL}/${parentName}/${a.href}` 
 			const aTitle = `${ofType} ${a.innerText}` 
@@ -215,22 +219,22 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 			toParent.appendChild( details ) 
  
 			// open and highlight navigation tree of current page 
-			if ( document.URL.includes( a.innerText ) || // module  
+			if ( document.URL.includes( a.innerText ) || // module 
 				document.URL.includes( a.innerText.replace(/\./g, "/") + "/p") // package 
 			  ) { 
-				summary.style.fontWeight = 'bold'  
-				summary.click()  
-			}  
-			const span = document.querySelector('span.packageLabelInType')  
-			if ( span && span.parentNode.lastChild.innerHTML === a.innerText )  
-				summary.click()  
+				summary.style.fontWeight = 'bold' 
+				summary.click() 
+			} 
+			const span = document.querySelector('span.packageLabelInType') 
+			if ( span && span.parentNode.lastChild.innerHTML === a.innerText ) 
+				summary.click() 
  
-		} // for ( links )  
-	}) // page load listener  
-	page.open('GET', fromURL, ASYNC )  
-	page.send()  
+		} // for ( links ) 
+	}) // page load listener 
+	page.open('GET', fromURL, ASYNC ) 
+	page.send() 
  
-} // addModulesOrPackages()  
+} // addModulesOrPackages() 
  
  
 /** 
@@ -278,7 +282,16 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
  
 				const a = link 
 				// Link for types: https://docs.oracle.com/en/java/javase/1{n}/docs/api/{module.name}/{package/path}/{type.name}.html 
-				a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.href}` 
+ 
+				// Needed for browsers, like Chrome, the a.href property of which is an absolute path 
+				// even if <a href='{relative path}'> is defined in the page's HTML. 
+				if ( a.href.startsWith("http") ) { 
+					// TODO doesn't work yet 
+					const currentModuleTitle = document.querySelector('h1[title="Module"]').innerText 
+					a.href = a.href.replace( currentModuleTitle.substr( currentModuleTitle.indexOf("&nbsp;") + 8 ), "" ) 
+				} 
+				else 
+					a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.href}` 
 				const aTitle = `${ofType} ${a.innerText}` 
 				a.title = aTitle 
 				const highlight = document.URL.includes( `/${a.innerText}.html` ) 
@@ -310,7 +323,7 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 		else if ( ofType === 'Error' ) 
 			addTypes( 'Annotation', fromURL, toParent, moduleName, packageName, typeCount, 5 ) 
  
-	}) // page load listener  
+	}) // page load listener 
 	page.open('GET', fromURL, ASYNC ) 
 	page.send() 
  
