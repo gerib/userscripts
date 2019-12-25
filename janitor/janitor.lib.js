@@ -1,7 +1,7 @@
 // ==UserScript== 
 // @name        JANITOR – Java API Navigation Is The Only Rescue (lib) 
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+. 
-// @version     19.12.23-231414
+// @version     19.12.26-003012
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774> 
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png 
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html> 
@@ -44,9 +44,9 @@
  *  ¹ for modules and packages 
  *  ² for types 
  * 
- * @see "How to place div side by side" <https://stackoverflow.com/a/24292602/1744774> 
- * @see "How to create a collapsing tree table in html/css/js?" <https://stackoverflow.com/a/36222693/1744774> 
- * @see "<div> with absolute position in the viewport when scrolling the page vertically" <https://stackoverflow.com/q/59417589/1744774> 
+ * @see 'How to place div side by side' <https://stackoverflow.com/a/24292602/1744774> 
+ * @see 'How to create a collapsing tree table in html/css/js?' <https://stackoverflow.com/a/36222693/1744774> 
+ * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774> 
  * 
  * NOTE 
  * 
@@ -61,6 +61,19 @@
  *                                                        ^^^^^^^^^^ wrong 
  *   while the following is correct and necessary: 
  *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/module-summary.html 
+ * 
+ *  The HTML spec says: 
+ * 
+ *    https://html.spec.whatwg.org/multipage/links.html#concept-hyperlink-url: 
+ * 
+ *      2. [...] parse this element's href content attribute value relative to this element's node document. 
+ *         If parsing is successful, set this element's url to the result; otherwise, set this element's url to null. 
+ * 
+ *    https://html.spec.whatwg.org/multipage/links.html#dom-hyperlink-href 
+ * 
+ *      The href attribute's getter must run these steps: 
+ * 
+ *        4. Otherwise, if url is null, return this element's href content attribute's value. 
  * 
  * TODO 
  *   - Solve Chrome issue as described in NOTE above. 
@@ -117,7 +130,7 @@ function JANITOR() {
 		const nav = document.createElement('div') 
 		nav.id = 'nav' 
 		nav.style.width = NAV_WIDTH 
-		// See "How to get the browser viewport dimensions?" <https://stackoverflow.com/a/8876069/1744774> 
+		// See 'How to get the browser viewport dimensions?' <https://stackoverflow.com/a/8876069/1744774> 
 		nav.style.height = `${ Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28 }px` 
 		nav.style.top = '24px' 
 		nav.style.position = 'fixed' 
@@ -154,14 +167,14 @@ function JANITOR() {
  * Add tree nodes of given type from given URL to given parent. 
  */ 
 function addModulesOrPackages( ofType, fromURL, toParent, parentName) { 
-	if (DEV) console.debug("addModulesOrPackages():", ofType +"(s)", "for", parentName, "from", fromURL, "to", toParent) 
+	if (DEV) console.debug("addModulesOrPackages():", ofType +"(s)", "in", parentName === '' ? "API" : "module " + parentName, "from", fromURL, "to", toParent) 
  
 	const types = "'Module', 'Package'" 
 	if ( types.search( ofType ) < 0 ) 
 		throw `function addModulesOrPackages(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`; 
  
 	const page = new XMLHttpRequest() 
-	page.addEventListener('load', function(event) { 
+	page.addEventListener( 'load', function(event) { 
 		if (DEBUG) console.debug(event) 
 		if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML) 
  
@@ -181,30 +194,29 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
  
 		const links = doc.querySelectorAll(`${selector}`) 
 		let nodeCount = links.length 
-		if (DEV) console.debug("addModulesOrPackages(): Links for", ofType + "s in", parentName, links) 
+		if (DEV) console.debug("Links for", ofType + "(s) in", parentName === '' ? "API" : "module " + parentName, links) 
  
-		for ( const link of links ) { 
+		for ( let link of links ) { 
  
 			let branch = `<span style='color:${COLORS.get( ofType )};'>${ICONS.get( ofType )}</span>` 
 			if ( ofType === 'Package' ) 
-			branch = `${--nodeCount > 0 ? "├" : "└"}─ ${branch}` 
+				branch = `${--nodeCount > 0 ? "├" : "└"}─ ${branch}` 
  
 			const details = document.createElement('details') 
 			const summary = document.createElement('summary') 
 			const a = link 
+			let aTitle = `${ofType} ${a.innerText}` 
+ 
 			// Link for modules: https://docs.oracle.com/en/java/javase/1{n}/docs/api/{module.name}/module-summary.html 
 			// Link for packages: https://docs.oracle.com/en/java/javase/1{n}/docs/api/{module.name}/{package/path}/package-summary.html 
  
-			// Needed for browsers, like Chrome, the a.href property of which is an absolute path 
-			// even if <a href='{relative path}'> is defined in the page's HTML. 
+				// For browsers, like Chrome, that are not HTML-compliant, see NOTE above. 
 			if ( a.href.startsWith("http") ) { 
-				// TODO doesn't work yet for packages 
-				const currentModuleTitle = document.querySelector('h1[title="Module"]').innerText 
-				a.href = a.href.replace( currentModuleTitle.substr( currentModuleTitle.indexOf("&nbsp;") + 8 ), "" ) 
+				a.href = "" 
+					aTitle += " – No hyperlink possible in this browser." 
 			} 
 			else 
 				a.href = `${API_URL}/${parentName}/${a.href}` 
-			const aTitle = `${ofType} ${a.innerText}` 
 			a.title = aTitle 
 			summary.innerHTML = `<span title="${aTitle}" style="cursor: default;">${branch} &nbsp;</span>` 
  
@@ -220,8 +232,8 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
  
 			// open and highlight navigation tree of current page 
 			if ( document.URL.includes( a.innerText ) || // module 
-				document.URL.includes( a.innerText.replace(/\./g, "/") + "/p") // package 
-			  ) { 
+				   document.URL.includes( a.innerText.replace(/\./g, "/") + "/p") // package 
+			   ) { 
 				summary.style.fontWeight = 'bold' 
 				summary.click() 
 			} 
@@ -241,7 +253,7 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
  * Add tree nodes of given type from given URL to given parent. 
  */ 
 function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount ) { 
-	if (DEV) console.debug("addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent, "count:", typeCount) 
+	//if (DEV) console.debug("addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent, "count:", typeCount) 
  
 	const types = "'Interface', 'Class', 'Enum', 'Exception', 'Error', 'Annotation'" 
 	if ( types.search( ofType ) < 0 ) 
@@ -264,8 +276,8 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 		if ( typeCount < 0 ) 
 			typeCount = doc.querySelectorAll('.typeSummary th > a').length 
  
-		// Used to select different type sections (Interface, Class, Enum, Exception, Error, Annotation) below 
-		// since there's still no CSS selector for <innerText>. 
+			// Used to select different type sections (Interface, Class, Enum, Exception, Error, Annotation) below 
+			// since there's still no CSS selector for <innerText>. 
 		for ( const span of doc.querySelectorAll('table > caption > span') ) 
 			span.setAttribute('type', span.innerText) 
 		const span = doc.querySelector(`table > caption > span[type^="${ofType}"]`) 
