@@ -1,7 +1,7 @@
 // ==UserScript== 
 // @name        JANITOR – Java API Navigation Is The Only Rescue (lib) 
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+. 
-// @version     19.12.26-180447
+// @version     19.12.26-230915
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774> 
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png 
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html> 
@@ -48,39 +48,7 @@
  * @see 'How to create a collapsing tree table in html/css/js?' <https://stackoverflow.com/a/36222693/1744774> 
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774> 
  * 
- * NOTE 
- * 
- *   This script doesn't work in Chrome (79.0.3945.88) yet since Chrome JavaScript's a.href property returns an absolute path 
- *   even if <a href='{relative path}'> is defined in the page's HTML. This is OK on the same page but it's not, 
- *   if some other page is loaded via a XMLHttpRequest, as it is done in this script. 
- * 
- *   For instance: 
- * 
- *     <a href='java.base/module-summary.html'> 
- * 
- *   leads to a a.href path: 
- * 
- *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java.base/module-summary.html 
- *                                                       ^^^^^^^^^^ wrong 
- *   while the following is correct and necessary: 
- * 
- *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/module-summary.html 
- * 
- *   The HTML spec says: 
- * 
- *     https://html.spec.whatwg.org/multipage/links.html#concept-hyperlink-url: 
- * 
- *       2. [...] parse this element's href content attribute value relative to this element's node document. 
- *          If parsing is successful, set this element's url to the result; otherwise, set this element's url to null. 
- * 
- *     https://html.spec.whatwg.org/multipage/links.html#dom-hyperlink-href 
- * 
- *       The href attribute's getter must run these steps: 
- * 
- *         4. Otherwise, if url is null, return this element's href content attribute's value. 
- * 
  * TODO 
- *   - Solve Chrome issue as described in NOTE above. 
  *   - Types with the same (linked) type parameter(s) (e.g. java.lang.Enum) appear manifold in the types' navigation. 
  *   - Test with other browsers than Firefox v71. 
  *   - Test with other userscript add-ons than Tampermonkey v4.9. 
@@ -210,19 +178,8 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 			const details = document.createElement('details') 
 			const summary = document.createElement('summary') 
 			const a = link 
-			let aTitle = `${ofType} ${a.innerText}` 
- 
-			// Link for modules: https://docs.oracle.com/en/java/javase/1{n}/docs/api/{module.name}/module-summary.html 
-			// Link for packages: https://docs.oracle.com/en/java/javase/1{n}/docs/api/{module.name}/{package/path}/package-summary.html 
- 
-			// For browsers, like Chrome, that are not HTML-compliant, see NOTE above. 
-			if ( a.href.startsWith("http") ) { 
-				a.href = "" 
-				aTitle += " – No hyperlink possible in this browser." 
-			} 
-			else 
-				a.href = `${API_URL}/${parentName}/${a.href}` 
-			a.title = aTitle 
+			a.href = `${API_URL}/${parentName}/${a.getAttribute('href')}` 
+			a.title = `${ofType} ${a.innerText}` 
 			summary.innerHTML = `<span title="${aTitle}" style="cursor: default;">${branch} &nbsp;</span>` 
  
 			summary.addEventListener( 'click', function() { 
@@ -296,21 +253,9 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
  
 				const details = document.createElement('div') 
 				const summary = document.createElement('span') 
- 
 				const a = link 
-				// Link for types: https://docs.oracle.com/en/java/javase/1{n}/docs/api/{module.name}/{package/path}/{type.name}.html 
- 
-				// Needed for browsers, like Chrome, the a.href property of which is an absolute path 
-				// even if <a href='{relative path}'> is defined in the page's HTML. 
-				if ( a.href.startsWith("http") ) { 
-					// TODO doesn't work yet 
-					const currentModuleTitle = document.querySelector('h1[title="Module"]').innerText 
-					a.href = a.href.replace( currentModuleTitle.substr( currentModuleTitle.indexOf("&nbsp;") + 8 ), "" ) 
-				} 
-				else 
-					a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.href}` 
-				const aTitle = `${ofType} ${a.innerText}` 
-				a.title = aTitle 
+				a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.getAttribute('href')}` 
+				a.title = `${ofType} ${a.innerText}` 
 				const highlight = document.URL.includes( `/${a.innerText}.html` ) 
 				const icon = `<span style='color:${COLORS.get( ofType )};${highlight ? 'font-weight:bold': ''}'>${ICONS.get( ofType )}</span>` 
 				const branch = `&nbsp; &nbsp; ･&nbsp; &nbsp;&thinsp;${--typeCount > 0 ? "├" : "└"}─ ${icon}` 
