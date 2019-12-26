@@ -1,7 +1,7 @@
 // ==UserScript== 
 // @name        JANITOR – Java API Navigation Is The Only Rescue (lib) 
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+. 
-// @version     19.12.26-003012
+// @version     19.12.26-131302
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774> 
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png 
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html> 
@@ -17,32 +17,21 @@
 // ==/UserScript== 
  
 /** 
- * Inspired by »Missing iFrame view for Javadocs JDK 11+« <https://stackoverflow.com/q/51992347/1744774>. 
+ * Inspired by 'Missing iFrame view for Javadocs JDK 11+' 
+ * <https://stackoverflow.com/q/51992347/1744774>. 
  * 
  * The original DOM: 
  * 
- *   <body> 
- *     <header> 
- *     <main> 
- *     <footer> 
+ * <body> <header> <main> <footer> 
  * 
  * is converted to: 
  * 
- *  <body> 
- *    <div id="nav&mainContainer" style="display: flex;"> 
- *    | <div style="position: fixed; width: ${NAV_WIDTH};">{title} 
- *    | <div id="nav" style="position: fixed; width: ${NAV_WIDTH};"> 
- *    | | <details>*¹ | <div>*² 
- *    | |   <summary>*¹ | <span>*² 
- *    | |     <span>{branch} 
- *    | |       <span>{icon} 
- *    | |         <a href='{module, package or type page}'>{module, package or type name}</a> 
- *    | <header> 
- *    | <main> 
- *    <footer> 
- * 
- *  ¹ for modules and packages 
- *  ² for types 
+ * <body> <div id="nav&mainContainer" style="display: flex;"> | <div 
+ * style="position: fixed; width: ${NAV_WIDTH};">{title} | <div id="nav" 
+ * style="position: fixed; width: ${NAV_WIDTH};"> | | <details>*¹ | <div>*² | | 
+ * <summary>*¹ | <span>*² | | <span>{branch} | | <span>{icon} | | <a 
+ * href='{module, package or type page}'>{module, package or type name}</a> | 
+ * <header> | <main> <footer> ¹ for modules and packages ² for types 
  * 
  * @see 'How to place div side by side' <https://stackoverflow.com/a/24292602/1744774> 
  * @see 'How to create a collapsing tree table in html/css/js?' <https://stackoverflow.com/a/36222693/1744774> 
@@ -51,29 +40,29 @@
  * NOTE 
  * 
  *   This script doesn't work in Chrome (79.0.3945.88) yet since Chrome JavaScript's a.href property returns an absolute path 
- *   even if <a href='{relative path}'> is defined in the page's HTML. This is OK on the same page but it's not, if 
- *   some other page is loaded via a XMLHttpRequest, as it is done in this script. 
+ *   even if <a href='{relative path}'> is defined in the page's HTML. This is OK on the same page but it's not, 
+ *   if some other page is loaded via a XMLHttpRequest, as it is done in this script. 
  * 
- *   For instance: 
- *     <a href='java.base/module-summary.html'> 
- *   leads to a a.href path: 
+ *   For instance: <a href='java.base/module-summary.html'> leads to a a.href path: 
+ * 
  *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java.base/module-summary.html 
- *                                                        ^^^^^^^^^^ wrong 
+ *                                                       ^^^^^^^^^^ wrong 
  *   while the following is correct and necessary: 
+ * 
  *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/module-summary.html 
  * 
- *  The HTML spec says: 
+ *   The HTML spec says: 
  * 
- *    https://html.spec.whatwg.org/multipage/links.html#concept-hyperlink-url: 
+ *     https://html.spec.whatwg.org/multipage/links.html#concept-hyperlink-url: 
  * 
- *      2. [...] parse this element's href content attribute value relative to this element's node document. 
- *         If parsing is successful, set this element's url to the result; otherwise, set this element's url to null. 
+ *       2. [...] parse this element's href content attribute value relative to this element's node document. 
+ *          If parsing is successful, set this element's url to the result; otherwise, set this element's url to null. 
  * 
- *    https://html.spec.whatwg.org/multipage/links.html#dom-hyperlink-href 
+ *     https://html.spec.whatwg.org/multipage/links.html#dom-hyperlink-href 
  * 
- *      The href attribute's getter must run these steps: 
+ *       The href attribute's getter must run these steps: 
  * 
- *        4. Otherwise, if url is null, return this element's href content attribute's value. 
+ *         4. Otherwise, if url is null, return this element's href content attribute's value. 
  * 
  * TODO 
  *   - Solve Chrome issue as described in NOTE above. 
@@ -83,18 +72,18 @@
  */ 
 'use strict' 
  
-//---------------------------------------------------------------------------------------- 
+// ---------------------------------------------------------------------------------------- 
 // Customize to your liking 
 const NAV_WIDTH = '30em' 
 const TYPE_LETTERS_IN_CIRCLE = true 
 const COLORS = new Map( 
 		[['Module',"black"],['Package',"purple"],['Interface',"dodgerblue"],['Class',"blue"], 
 		['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] ) 
-//---------------------------------------------------------------------------------------- 
+// ---------------------------------------------------------------------------------------- 
  
 const DEV = true // set to »true« while developing 
 const DEBUG = false // set to »true« for debugging 
-const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length ); 
+const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length ) 
 const ASYNC = true 
 const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE 
 		? [['Module',"Ⓜ"],['Package',"Ⓟ"],['Interface',"Ⓘ"],['Class',"Ⓒ"],['Enum',"Ⓔ<sub>n</sub>"], 
@@ -107,7 +96,7 @@ JANITOR() // for developing
 function JANITOR() { 
  
 	try { 
-		console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue (lib)..."); 
+		console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue (lib)...") 
  
 		// Create navigation tree 
 		const container = document.createElement('div') 
@@ -124,6 +113,7 @@ function JANITOR() {
 		a.href = 'https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue' 
 		a.innerText = "JANITOR – Java API Navigation Is The Only Rescue" 
 		a.title = "JANITOR – Java API Navigation Is The Only Rescue" 
+ 
 		title.appendChild( a ) 
 		container.appendChild( title ) 
  
@@ -134,7 +124,7 @@ function JANITOR() {
 		nav.style.height = `${ Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28 }px` 
 		nav.style.top = '24px' 
 		nav.style.position = 'fixed' 
-		//nav.style.borderRight = '1px solid' 
+		// nav.style.borderRight = '1px solid' 
 		nav.style.overflowY = 'scroll' 
 		nav.style.paddingTop = '3px' 
 		container.appendChild( nav ) 
@@ -171,7 +161,7 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
  
 	const types = "'Module', 'Package'" 
 	if ( types.search( ofType ) < 0 ) 
-		throw `function addModulesOrPackages(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`; 
+		throw `function addModulesOrPackages(): Illegal argument ofType='${ofType}'. Only ${types} allowed.` 
  
 	const page = new XMLHttpRequest() 
 	page.addEventListener( 'load', function(event) { 
@@ -179,8 +169,8 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 		if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML) 
  
 		// responseXML == null with error message: 
-		//   XML-Error: Not matching tag. Expected: </script>. 
-		//   Line No. xx, Column yyy 
+		// XML-Error: Not matching tag. Expected: </script>. 
+		// Line No. xx, Column yyy 
 		// therefore creating a new document from responseText 
 		const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html'); 
 		doc.open() 
@@ -210,10 +200,10 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 			// Link for modules: https://docs.oracle.com/en/java/javase/1{n}/docs/api/{module.name}/module-summary.html 
 			// Link for packages: https://docs.oracle.com/en/java/javase/1{n}/docs/api/{module.name}/{package/path}/package-summary.html 
  
-				// For browsers, like Chrome, that are not HTML-compliant, see NOTE above. 
+			// For browsers, like Chrome, that are not HTML-compliant, see NOTE above. 
 			if ( a.href.startsWith("http") ) { 
 				a.href = "" 
-					aTitle += " – No hyperlink possible in this browser." 
+				aTitle += " – No hyperlink possible in this browser." 
 			} 
 			else 
 				a.href = `${API_URL}/${parentName}/${a.href}` 
@@ -232,7 +222,7 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
  
 			// open and highlight navigation tree of current page 
 			if ( document.URL.includes( a.innerText ) || // module 
-				   document.URL.includes( a.innerText.replace(/\./g, "/") + "/p") // package 
+			     document.URL.includes( a.innerText.replace(/\./g, "/") + "/p") // package 
 			   ) { 
 				summary.style.fontWeight = 'bold' 
 				summary.click() 
@@ -253,11 +243,11 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
  * Add tree nodes of given type from given URL to given parent. 
  */ 
 function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount ) { 
-	//if (DEV) console.debug("addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent, "count:", typeCount) 
+	// if (DEV) console.debug("addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent, "count:", typeCount) 
  
 	const types = "'Interface', 'Class', 'Enum', 'Exception', 'Error', 'Annotation'" 
 	if ( types.search( ofType ) < 0 ) 
-		throw `function addTypes(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`; 
+		throw `function addTypes(): Illegal argument ofType='${ofType}'. Only ${types} allowed.` 
  
 	const page = new XMLHttpRequest() 
 	page.addEventListener('load', function( event ) { 
@@ -265,8 +255,8 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 		if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML) 
  
 		// responseXML == null with error message: 
-		//   XML-Error: Not matching tag. Expected: </script>. 
-		//   Line No. xx, Column yyy 
+		// XML-Error: Not matching tag. Expected: </script>. 
+		// Line No. xx, Column yyy 
 		// therefore creating a new document from responseText 
 		const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html'); 
 		doc.open() 
@@ -276,8 +266,8 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 		if ( typeCount < 0 ) 
 			typeCount = doc.querySelectorAll('.typeSummary th > a').length 
  
-			// Used to select different type sections (Interface, Class, Enum, Exception, Error, Annotation) below 
-			// since there's still no CSS selector for <innerText>. 
+		// Used to select different type sections (Interface, Class, Enum, Exception, Error, Annotation) below 
+		// since there's still no CSS selector for <innerText>. 
 		for ( const span of doc.querySelectorAll('table > caption > span') ) 
 			span.setAttribute('type', span.innerText) 
 		const span = doc.querySelector(`table > caption > span[type^="${ofType}"]`) 
