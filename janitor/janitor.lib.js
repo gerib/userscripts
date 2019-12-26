@@ -1,7 +1,7 @@
 // ==UserScript== 
 // @name        JANITOR – Java API Navigation Is The Only Rescue (lib) 
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+. 
-// @version     19.12.26-135222
+// @version     19.12.26-180324
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774> 
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png 
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html> 
@@ -17,21 +17,32 @@
 // ==/UserScript== 
  
 /** 
- * Inspired by 'Missing iFrame view for Javadocs JDK 11+' 
- * <https://stackoverflow.com/q/51992347/1744774>. 
+ * Inspired by 'Missing iFrame view for Javadocs JDK 11+' <https://stackoverflow.com/q/51992347/1744774>. 
  * 
  * The original DOM: 
  * 
- * <body> <header> <main> <footer> 
+ *   <body> 
+ *     <header> 
+ *     <main> 
+ *     <footer> 
  * 
  * is converted to: 
  * 
- * <body> <div id="nav&mainContainer" style="display: flex;"> | <div 
- * style="position: fixed; width: ${NAV_WIDTH};">{title} | <div id="nav" 
- * style="position: fixed; width: ${NAV_WIDTH};"> | | <details>*¹ | <div>*² | | 
- * <summary>*¹ | <span>*² | | <span>{branch} | | <span>{icon} | | <a 
- * href='{module, package or type page}'>{module, package or type name}</a> | 
- * <header> | <main> <footer> ¹ for modules and packages ² for types 
+ *   <body> 
+ *     <div id="nav&mainContainer" style="display: flex;"> 
+ *     | <div style="position: fixed; width: ${NAV_WIDTH};">{title} 
+ *     | <div id="nav" style="position: fixed; width: ${NAV_WIDTH};"> 
+ *     | | <details>*¹ | <div>*² 
+ *     | |   <summary>*¹ | <span>*² 
+ *     | |     <span>{branch} 
+ *     | |       <span>{icon} 
+ *     | | <a href='{module, package or type page}'>{module, package or type name}</a> 
+ *     | <header> 
+ *     | <main> 
+ *     <footer> 
+ * 
+ *  ¹ for modules and packages 
+ *  ² for types 
  * 
  * @see 'How to place div side by side' <https://stackoverflow.com/a/24292602/1744774> 
  * @see 'How to create a collapsing tree table in html/css/js?' <https://stackoverflow.com/a/36222693/1744774> 
@@ -43,7 +54,11 @@
  *   even if <a href='{relative path}'> is defined in the page's HTML. This is OK on the same page but it's not, 
  *   if some other page is loaded via a XMLHttpRequest, as it is done in this script. 
  * 
- *   For instance: <a href='java.base/module-summary.html'> leads to a a.href path: 
+ *   For instance: 
+ * 
+ *     <a href='java.base/module-summary.html'> 
+ * 
+ *   leads to a a.href path: 
  * 
  *     https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java.base/module-summary.html 
  *                                                       ^^^^^^^^^^ wrong 
