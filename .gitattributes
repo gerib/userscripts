@@ -7,6 +7,7 @@
 #   That means:
 #     1. there is always a difference between working tree and index
 #     2. the working tree does not contain the latest source (with the current @version)
+#     3. Cmd line git and EGit get totally confused by this.
 
-*.user.js filter=set-userscript-version
-*.lib.js filter=set-userscript-version
+#*.user.js filter=set-userscript-version
+#*.lib.js filter=set-userscript-version
