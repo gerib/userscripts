@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue (lib)
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     19.12.26-232847
+// @version     19.12.28-22.32
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -49,7 +49,6 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
- *   - Module 'java.se' contains other modules, not packages.
  *   - Test with other browsers than Firefox v71 and _Chrome v79.
  *   - Test with other userscript add-ons than Tampermonkey v4.9.
  */
@@ -172,19 +171,22 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 		for ( let link of links ) {
 
 			let branch = `<span style='color:${COLORS.get( ofType )};'>${ICONS.get( ofType )}</span>`
-			if ( ofType === 'Package' )
-				branch = `${--nodeCount > 0 ? "├" : "└"}─ ${branch}`
+			if ( ofType === 'Package' || parentName === "java.se" )
+				branch = `${parentName === "java.se" ? "&nbsp; &nbsp;" : ""}${--nodeCount > 0 ? "├" : "└"}─ ${branch}`
 
-			const details = document.createElement('details')
-			const summary = document.createElement('summary')
+			const details = parentName === "java.se" ? document.createElement('div') : document.createElement('details')
+			const summary = parentName === "java.se" ? document.createElement('span') : document.createElement('summary')
 			const a = link
-			a.href = `${API_URL}/${parentName}/${a.getAttribute('href')}`
+			a.href = `${API_URL}/${ parentName === "java.se" ? "" : parentName + "/"}${a.getAttribute('href')}`
 			a.title = `${ofType} ${a.innerText}`
 			summary.innerHTML = `<span title="${a.title}" style="cursor: default;">${branch} &nbsp;</span>`
 
+			if ( parentName !== "java.se" )
 			summary.addEventListener( 'click', function() {
 				ofType === 'Module'
-					? addModulesOrPackages( 'Package', a.href, details, a.innerText, 0 )
+					? a.innerText === 'java.se'
+						? addModulesOrPackages( 'Module', API_URL, details, a.innerText )
+				  		: addModulesOrPackages( 'Package', a.href, details, a.innerText )
 					: addTypes( 'Interface', a.href, details, parentName, a.innerText, -1, 0, "" )
 			}, { once:true } )
 
