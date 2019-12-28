@@ -252,8 +252,10 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 			let previousTypeName = null
 			for ( const link of links ) {
 
-				if ( link.innerText === previousTypeName )
+				if ( link.innerText === previousTypeName ) {
+					typeCount--
 					continue
+					}
 
 				const details = document.createElement('div')
 				const summary = document.createElement('span')
