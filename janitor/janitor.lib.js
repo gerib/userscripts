@@ -1,48 +1,57 @@
-// ==UserScript==
-// @name        JANITOR – Java API Navigation Is The Only Rescue (lib)
-// @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     19.12.28-22.32
-// @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
-// @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
-// @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
-// @homepage    https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue
-// @supportURL  https://github.com/gerib/userscripts/issues
-// @downloadURL https://raw.githubusercontent.com/gerib/userscripts/master/janitor/janitor.lib.js
-// @updateURL   https://raw.githubusercontent.com/gerib/userscripts/master/janitor/janitor.lib.js
-// --------------------------------------------------
-// @namespace   igb
-// @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][0-9]\/docs\/api\/.*/
-// @run-at      document-idle
-// @grant       none
-// ==/UserScript==
-
-/**
- * Inspired by 'Missing iFrame view for Javadocs JDK 11+'
- * <https://stackoverflow.com/q/51992347/1744774>.
- *
- * The original DOM:
- *
- * <body> <header> <main> <footer>
- *
- * is converted to:
- *
- * <body> <div id="nav&mainContainer" style="display: flex;"> | <div
- * style="position: fixed; width: ${NAV_WIDTH};">{title} | <div id="nav"
- * style="position: fixed; width: ${NAV_WIDTH};"> | | <details>*¹ | <div>*² | |
- * <summary>*¹ | <span>*² | | <span>{branch} | | <span>{icon} | | <a
- * href='{module, package or type page}'>{module, package or type name}</a> |
- * <header> | <main> <footer>
- *  ¹ for modules and packages ² for types
- *
- * @see 'How to place div side by side'
- *      <https://stackoverflow.com/a/24292602/1744774>
- * @see 'How to create a collapsing tree table in html/css/js?'
- *      <https://stackoverflow.com/a/36222693/1744774>
- * @see '<div> with absolute position in the viewport when scrolling the page
- *      vertically' <https://stackoverflow.com/q/59417589/1744774>
- *
- * TODO - Test with other browsers than Firefox v71 and _Chrome v79. - Test with
- * other userscript add-ons than Tampermonkey v4.9.
+// ==UserScript== 
+// @name        JANITOR – Java API Navigation Is The Only Rescue (lib) 
+// @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+. 
+// @version     19.12.26-232847
+// @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774> 
+// @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png 
+// @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html> 
+// @homepage    https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue 
+// @supportURL  https://github.com/gerib/userscripts/issues 
+// @downloadURL https://raw.githubusercontent.com/gerib/userscripts/master/janitor/janitor.lib.js 
+// @updateURL   https://raw.githubusercontent.com/gerib/userscripts/master/janitor/janitor.lib.js 
+// -------------------------------------------------- 
+// @namespace   igb 
+// @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][0-9]\/docs\/api\/.*/ 
+// @run-at      document-idle 
+// @grant       none 
+// ==/UserScript== 
+ 
+/** 
+ * Inspired by 'Missing iFrame view for Javadocs JDK 11+' <https://stackoverflow.com/q/51992347/1744774>. 
+ * 
+ * The original DOM: 
+ * 
+ *   <body> 
+ *     <header> 
+ *     <main> 
+ *     <footer> 
+ * 
+ * is converted to: 
+ * 
+ *   <body> 
+ *     <div id="nav&mainContainer" style="display: flex;"> 
+ *     | <div style="position: fixed; width: ${NAV_WIDTH};">{title} 
+ *     | <div id="nav" style="position: fixed; width: ${NAV_WIDTH};"> 
+ *     | | <details>*¹ | <div>*² 
+ *     | |   <summary>*¹ | <span>*² 
+ *     | |     <span>{branch} 
+ *     | |       <span>{icon} 
+ *     | |         <a href='{module, package or type page}'>{module, package or type name}</a> 
+ *     | <header> 
+ *     | <main> 
+ *     <footer> 
+ * 
+ *  ¹ for modules and packages 
+ *  ² for types 
+ * 
+ * @see 'How to place div side by side' <https://stackoverflow.com/a/24292602/1744774> 
+ * @see 'How to create a collapsing tree table in html/css/js?' <https://stackoverflow.com/a/36222693/1744774> 
+ * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774> 
+ * 
+ * TODO
+ *   - Some modules contain packages AND modules, e.g. java.xml in java.xml.crypto
+ *   - Test with other browsers than Firefox v71 and _Chrome v79.
+ *   - Test with other userscript add-ons than Tampermonkey v4.9.
  */
 'use strict'
 
@@ -55,7 +64,7 @@ const COLORS = new Map(
 		['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] )
 // ----------------------------------------------------------------------------------------
 
-const DEV = false // set to »true« while developing
+const DEV = true // set to »true« while developing
 const DEBUG = false // set to »true« for debugging
 const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length )
 const ASYNC = true
@@ -65,7 +74,7 @@ const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
 		: [['Module',"M"],['Package',"P"],['Interface',"I"],['Class',"C"],['Enum',"E<sub>n</sub>"],
 		   ['Exception',"E<sub>x</sub>"],['Error',"E<sub>r</sub>"],['Annotation',"A"]] )
 
-// JANITOR() // for developing
+ JANITOR() // for developing
 
 function JANITOR() {
 
@@ -144,8 +153,8 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 		if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)
 
 		// responseXML == null with error message:
-		// XML-Error: Not matching tag. Expected: </script>.
-		// Line No. xx, Column yyy
+		//   XML-Error: Not matching tag. Expected: </script>.
+		//   Line No. xx, Column yyy
 		// therefore creating a new document from responseText
 		const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
 		doc.open()
@@ -153,9 +162,11 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 		doc.close()
 
 		// CSS selector for links <ofType> on page denoted by <fromURL>
-		const selector = ofType === 'Module'
-			? '.overviewSummary th > a' // Java 11: <table>, Java 12+: <div>
-			: '.packagesSummary th > a' // Java 11: <table>, Java 12+: <div>
+        let selector
+        if ( ofType === 'Package' || parentName === "java.se" )
+			selector = '.packagesSummary th > a' // Java 11: <table>, Java 12+: <div>
+        else
+            selector ='.overviewSummary th > a' // Java 11: <table>, Java 12+: <div>
 
 		const links = doc.querySelectorAll(`${selector}`)
 		let nodeCount = links.length
@@ -170,7 +181,8 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 			const details = parentName === "java.se" ? document.createElement('div') : document.createElement('details')
 			const summary = parentName === "java.se" ? document.createElement('span') : document.createElement('summary')
 			const a = link
-			a.href = `${API_URL}/${ parentName === "java.se" ? "" : parentName + "/"}${a.getAttribute('href')}`
+			//a.href = `${API_URL}/${ parentName === "java.se" ? "" : parentName + "/"}${a.getAttribute('href')}`
+			a.href = `${API_URL}/${parentName + "/"}${a.getAttribute('href')}`
 			a.title = `${ofType} ${a.innerText}`
 			summary.innerHTML = `<span title="${a.title}" style="cursor: default;">${branch} &nbsp;</span>`
 
@@ -178,7 +190,7 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 				summary.addEventListener( 'click', function() {
 					ofType === 'Module'
 						? a.innerText === 'java.se'
-							? addModulesOrPackages( 'Module', API_URL, details, a.innerText )
+							? addModulesOrPackages( 'Module', a.href, details, a.innerText )
 					  		: addModulesOrPackages( 'Package', a.href, details, a.innerText )
 						: addTypes( 'Interface', a.href, details, parentName, a.innerText, -1, 0, "" )
 				}, { once:true } )
@@ -222,8 +234,8 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 		if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)
 
 		// responseXML == null with error message:
-		// XML-Error: Not matching tag. Expected: </script>.
-		// Line No. xx, Column yyy
+		//   XML-Error: Not matching tag. Expected: </script>.
+		//   Line No. xx, Column yyy
 		// therefore creating a new document from responseText
 		const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
 		doc.open()
@@ -233,8 +245,7 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 		if ( typeCount < 0 )
 			typeCount = doc.querySelectorAll('.typeSummary th > a').length
 
-		// Used to select different type sections (Interface, Class, Enum,
-		// Exception, Error, Annotation) below
+		// Used to select different type sections (Interface, Class, Enum, Exception, Error, Annotation) below
 		// since there's still no CSS selector for <innerText>.
 		for ( const span of doc.querySelectorAll('table > caption > span') )
 			span.setAttribute('type', span.innerText)
@@ -242,7 +253,7 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 
 		if ( span ) {
 			const links = span.parentNode.parentNode.querySelectorAll('tbody > tr > th > a')
-			// span< caption < table
+			//            span< caption  < table
 			if (DEV) console.debug("addTypes(): Links for", ofType + "s in", moduleName + "/" + packageName, links)
 
 			let previousTypeName = null
