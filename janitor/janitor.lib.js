@@ -64,7 +64,7 @@ const COLORS = new Map(
 		['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] )
 // ----------------------------------------------------------------------------------------
 
-const DEV = true // set to »true« while developing
+const DEV = false // set to »true« while developing
 const DEBUG = false // set to »true« for debugging
 const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length )
 const ASYNC = true
@@ -74,7 +74,7 @@ const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
 		: [['Module',"M"],['Package',"P"],['Interface',"I"],['Class',"C"],['Enum',"E<sub>n</sub>"],
 		   ['Exception',"E<sub>x</sub>"],['Error',"E<sub>r</sub>"],['Annotation',"A"]] )
 
- JANITOR() // for developing
+// JANITOR() // for developing
 
 function JANITOR() {
 
