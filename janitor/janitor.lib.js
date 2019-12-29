@@ -49,7 +49,7 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
- *   - Test with other browsers than Firefox v71 and _Chrome v79.
+ *   - Test with other browsers than Firefox v71 and Chrome v79.
  *   - Test with other userscript add-ons than Tampermonkey v4.9.
  */
 'use strict'
