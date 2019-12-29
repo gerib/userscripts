@@ -49,8 +49,7 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774> 
  * 
  * TODO
- *   - Some modules contain packages AND modules, e.g. java.xml in java.xml.crypto
- *   - Test with other browsers than Firefox v71 and _Chrome v79.
+ *   - Test with other browsers than Firefox v71 and Chrome v79.
  *   - Test with other userscript add-ons than Tampermonkey v4.9.
  */
 'use strict'
@@ -163,7 +162,8 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 		// CSS selector for links <ofType> on page denoted by <fromURL>
 		let selector
 		if ( ofType === 'Package' || parentName === "java.se" )
-			selector = '.packagesSummary th > a' // Java 11: <table>, Java 12+: <div>
+			// see 'CSS selector for first element with class' <https://stackoverflow.com/a/40390132/1744774>
+			selector = '.packagesSummary:first-of-type th > a' // Java 11: <table>, Java 12+: <div>
 		else
 			selector ='.overviewSummary th > a' // Java 11: <table>, Java 12+: <div>
 
@@ -180,7 +180,6 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 			const details = parentName === "java.se" ? document.createElement('div') : document.createElement('details')
 			const summary = parentName === "java.se" ? document.createElement('span') : document.createElement('summary')
 			const a = link
-			//a.href = `${API_URL}/${ parentName === "java.se" ? "" : parentName + "/"}${a.getAttribute('href')}`
 			a.href = `${API_URL}/${parentName + "/"}${a.getAttribute('href')}`
 			a.title = `${ofType} ${a.innerText}`
 			summary.innerHTML = `<span title="${a.title}" style="cursor: default;">${branch} &nbsp;</span>`
