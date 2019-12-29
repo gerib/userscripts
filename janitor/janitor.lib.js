@@ -103,8 +103,7 @@ function JANITOR() {
 		const nav = document.createElement('div')
 		nav.id = 'nav'
 		nav.style.width = NAV_WIDTH
-		// See 'How to get the browser viewport dimensions?'
-		// <https://stackoverflow.com/a/8876069/1744774>
+		// See 'How to get the browser viewport dimensions?' <https://stackoverflow.com/a/8876069/1744774>
 		nav.style.height = `${ Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28 }px`
 		nav.style.top = '24px'
 		nav.style.position = 'fixed'
@@ -162,11 +161,11 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 		doc.close()
 
 		// CSS selector for links <ofType> on page denoted by <fromURL>
-        let selector
-        if ( ofType === 'Package' || parentName === "java.se" )
+		let selector
+		if ( ofType === 'Package' || parentName === "java.se" )
 			selector = '.packagesSummary th > a' // Java 11: <table>, Java 12+: <div>
-        else
-            selector ='.overviewSummary th > a' // Java 11: <table>, Java 12+: <div>
+		else
+			selector ='.overviewSummary th > a' // Java 11: <table>, Java 12+: <div>
 
 		const links = doc.querySelectorAll(`${selector}`)
 		let nodeCount = links.length
