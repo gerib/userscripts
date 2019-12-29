@@ -49,7 +49,6 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
- *   - Some modules contain packages AND modules, e.g. java.xml in java.xml.crypto
  *   - Test with other browsers than Firefox v71 and _Chrome v79.
  *   - Test with other userscript add-ons than Tampermonkey v4.9.
  */
