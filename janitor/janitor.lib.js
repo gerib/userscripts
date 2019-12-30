@@ -49,6 +49,7 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
+ *   - Scroll currently selected item into viewport.
  *   - Test with other browsers than Firefox v71 and Chrome v79.
  *   - Test with other userscript add-ons than Tampermonkey v4.9.
  */
@@ -196,8 +197,8 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 			toParent.appendChild( details )
 
 			// open and highlight navigation tree of current page
-			if ( document.URL.includes( a.innerText ) || // module
-			     document.URL.includes( a.innerText.replace(/\./g, "/") + "/p") // package
+			if ( document.URL.includes( `${a.innerText}/` ) || // module
+			     document.URL.includes( `${a.innerText.replace(/\./g, "/")}/p` ) // package
 			   ) {
 				summary.style.fontWeight = 'bold'
 				summary.click()
