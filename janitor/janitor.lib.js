@@ -26,7 +26,7 @@
  *     <main>
  *     <footer>
  *
- * is converted to:
+ * is adapted to:
  *
  *   <body>
  *     <div id="JANITOR" style="display: flex;">
@@ -37,9 +37,9 @@
  *     |       <span>{branch}
  *     |         <span>{icon}
  *     |           <a href='{module, package or type page}'>{module, package or type name}</a>
- *     <header>
- *     <main>
- *     <footer>
+ *     <header style="margin-left: ${NAV_WIDTH}">
+ *     <main style="margin-left: ${NAV_WIDTH}">
+ *     <footer style="margin-left: ${NAV_WIDTH}">
  *
  *  ¹ for modules and packages
  *  ² for types and modules in java.se
