@@ -206,7 +206,7 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
 			   ) {
 				summary.style.fontWeight = 'bold'
 				summary.click()
-				navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 3 )
+				navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 2 )
 			}
 			const span = document.querySelector('span.packageLabelInType')
 			if ( span && span.parentNode.lastChild.innerHTML === a.innerText )
@@ -284,7 +284,7 @@ function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageNam
 				if ( highlight ) {
 					details.parentNode.firstChild.style.fontWeight = 'bold'
 					a.style.fontWeight = 'bold'
-					navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 3 )
+					navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 2 )
 				}
 				previousTypeName = a.innerText
 
