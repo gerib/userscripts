@@ -116,6 +116,9 @@ function JANITOR() {
 		// Rearrange existing elements
 		const header = document.getElementsByTagName('header')[0]
 		header.style.marginLeft = NAV_WIDTH
+	  	const h1 = document.querySelector('body > div.header') // for Java 11 Overview page
+		if ( h1 )
+			h1.style.marginLeft = NAV_WIDTH
 		document.querySelector('div.fixedNav').style.width = 'auto'
 		document.getElementsByTagName('main')[0].style.marginLeft = NAV_WIDTH
 		document.getElementsByTagName('footer')[0].style.marginLeft = NAV_WIDTH
