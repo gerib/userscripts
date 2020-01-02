@@ -49,7 +49,6 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
- *   - Scroll currently selected item into viewport.
  *   - Test with other browsers than Firefox v71 and Chrome v79.
  *   - Test with other userscript add-ons than Tampermonkey v4.9.
  */
@@ -73,8 +72,11 @@ const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
 		   ['Exception',"Ⓔ<sub>x</sub>"],['Error',"Ⓔ<sub>r</sub>"],['Annotation',"Ⓐ"]]
 		: [['Module',"M"],['Package',"P"],['Interface',"I"],['Class',"C"],['Enum',"E<sub>n</sub>"],
 		   ['Exception',"E<sub>x</sub>"],['Error',"E<sub>r</sub>"],['Annotation',"A"]] )
+// See 'How to get the browser viewport dimensions?' <https://stackoverflow.com/a/8876069/1744774>
+const VIEWPORT_HEIGHT = Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28
+const VIEWPORT_HALF = VIEWPORT_HEIGHT >>> 1
 
-// JANITOR() // for developing
+//JANITOR() // for developing
 
 function JANITOR() {
 
@@ -103,8 +105,7 @@ function JANITOR() {
 		const nav = document.createElement('div')
 		nav.id = 'nav'
 		nav.style.width = NAV_WIDTH
-		// See 'How to get the browser viewport dimensions?' <https://stackoverflow.com/a/8876069/1744774>
-		nav.style.height = `${ Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28 }px`
+		nav.style.height = `${VIEWPORT_HEIGHT}px`
 		nav.style.top = '24px'
 		nav.style.position = 'fixed'
 		// nav.style.borderRight = '1px solid'
@@ -122,7 +123,7 @@ function JANITOR() {
    		// Add navigation to DOM
 		header.parentNode.insertBefore(janitor, header)
 
-		addModulesOrPackages( 'Module', API_URL, nav, '' )
+		addModulesOrPackages( 'Module', nav, API_URL, nav, '' )
 
 		console.log("END JANITOR – Java API Navigation Is The Only Rescue (lib).")
 	}
@@ -136,7 +137,7 @@ function JANITOR() {
 /**
  * Add tree nodes of given type from given URL to given parent.
  */
-function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
+function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName) {
 	if (DEV) console.debug("addModulesOrPackages():", ofType +"(s)", "in", parentName === '' ? "API" : "module " + parentName, "from", fromURL, "to", toParent)
 
 	const types = "'Module', 'Package'"
@@ -187,9 +188,9 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 				summary.addEventListener( 'click', function() {
 					ofType === 'Module'
 						? a.innerText === 'java.se'
-							? addModulesOrPackages( 'Module', a.href, details, a.innerText )
-					  		: addModulesOrPackages( 'Package', a.href, details, a.innerText )
-						: addTypes( 'Interface', a.href, details, parentName, a.innerText, -1, 0, "" )
+							? addModulesOrPackages( 'Module', navigation, a.href, details, a.innerText )
+							: addModulesOrPackages( 'Package', navigation, a.href, details, a.innerText )
+						: addTypes( 'Interface', navigation, a.href, details, parentName, a.innerText, -1, 0, "" )
 				}, { once:true } )
 
 			summary.appendChild( a )
@@ -202,6 +203,7 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 			   ) {
 				summary.style.fontWeight = 'bold'
 				summary.click()
+				navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 3 )
 			}
 			const span = document.querySelector('span.packageLabelInType')
 			if ( span && span.parentNode.lastChild.innerHTML === a.innerText )
@@ -218,7 +220,7 @@ function addModulesOrPackages( ofType, fromURL, toParent, parentName) {
 /**
  * Add tree nodes of given type from given URL to given parent.
  */
-function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount ) {
+function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount ) {
 	if (DEV) console.debug("addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent, "count:", typeCount)
 
 	const types = "'Interface', 'Class', 'Enum', 'Exception', 'Error', 'Annotation'"
@@ -279,6 +281,7 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 				if ( highlight ) {
 					details.parentNode.firstChild.style.fontWeight = 'bold'
 					a.style.fontWeight = 'bold'
+					navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 3 )
 				}
 				previousTypeName = a.innerText
 
@@ -286,15 +289,15 @@ function addTypes( ofType, fromURL, toParent, moduleName, packageName, typeCount
 		} // if ( section <ofType> exists )
 
 		if ( ofType === 'Interface' )
-			addTypes( 'Class', fromURL, toParent, moduleName, packageName, typeCount )
+			addTypes( 'Class', navigation, fromURL, toParent, moduleName, packageName, typeCount )
 		else if ( ofType === 'Class' )
-			addTypes( 'Enum', fromURL, toParent, moduleName, packageName, typeCount )
+			addTypes( 'Enum', navigation, fromURL, toParent, moduleName, packageName, typeCount )
 		else if ( ofType === 'Enum' )
-			addTypes( 'Exception', fromURL, toParent, moduleName, packageName, typeCount)
+			addTypes( 'Exception', navigation, fromURL, toParent, moduleName, packageName, typeCount)
 		else if ( ofType === 'Exception' )
-			addTypes( 'Error', fromURL, toParent, moduleName, packageName, typeCount )
+			addTypes( 'Error', navigation, fromURL, toParent, moduleName, packageName, typeCount )
 		else if ( ofType === 'Error' )
-			addTypes( 'Annotation', fromURL, toParent, moduleName, packageName, typeCount )
+			addTypes( 'Annotation', navigation, fromURL, toParent, moduleName, packageName, typeCount )
 
 	}) // page load listener
 	page.open('GET', fromURL, ASYNC )
