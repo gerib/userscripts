@@ -49,6 +49,9 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
+ *   - If a package has the same name as its enclosing module (e.g. Ⓜ java.sql > Ⓟ java.sql)
+ *     * the module (and package) is not expanded if a type of the package is selected
+ *     * the package is wrongly expanded if a type of a sibling package (e.g. Ⓟ javax.sql) is selected
  *   - Test with other browsers than Firefox v71 and Chrome v79.
  *   - Test with other userscript add-ons than Tampermonkey v4.9.
  */
