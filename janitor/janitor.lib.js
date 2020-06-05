@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue (lib)
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     19.12.29-1230
+// @version     20.06.05-1900
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -19,7 +19,7 @@
 /**
  * Inspired by 'Missing iFrame view for Javadocs JDK 11+' <https://stackoverflow.com/q/51992347/1744774>.
  *
- * The original DOM:
+ * The original Javadoc page's DOM:
  *
  *   <body>
  *     <header>
@@ -102,16 +102,16 @@ function JANITOR() {
 		title.appendChild( a )
 		janitor.appendChild( title )
 
-		const nav = document.createElement('div')
-		nav.id = 'nav'
-		nav.style.width = NAV_WIDTH
-		nav.style.height = `${VIEWPORT_HEIGHT}px`
-		nav.style.top = '24px'
-		nav.style.position = 'fixed'
-		// nav.style.borderRight = '1px solid'
-		nav.style.overflowY = 'scroll'
-		nav.style.paddingTop = '3px'
-		janitor.appendChild( nav )
+		const navigation = document.createElement('div')
+		navigation.id = 'nav'
+		navigation.style.width = NAV_WIDTH
+		navigation.style.height = `${VIEWPORT_HEIGHT}px`
+		navigation.style.top = '24px'
+		navigation.style.position = 'fixed'
+		// navigation.style.borderRight = '1px solid'
+		navigation.style.overflowY = 'scroll'
+		navigation.style.paddingTop = '3px'
+		janitor.appendChild( navigation )
 
 		// Rearrange existing elements
 		const header = document.getElementsByTagName('header')[0]
@@ -119,14 +119,16 @@ function JANITOR() {
 	  	const h1 = document.querySelector('body > div.header') // for Java 11 Overview page
 		if ( h1 )
 			h1.style.marginLeft = NAV_WIDTH
-		document.querySelector('div.fixedNav').style.width = 'auto'
+		let nav = document.querySelector('div.fixedNav') // for Java <=13
+		if ( nav )
+			document.querySelector('div.fixedNav').style.width = 'auto'
 		document.getElementsByTagName('main')[0].style.marginLeft = NAV_WIDTH
 		document.getElementsByTagName('footer')[0].style.marginLeft = NAV_WIDTH
 
    		// Add navigation to DOM
 		header.parentNode.insertBefore(janitor, header)
 
-		addModulesOrPackages( 'Module', nav, API_URL, nav, '' )
+		addModulesOrPackages( 'Module', navigation, API_URL, navigation, '' )
 
 		console.log("END JANITOR – Java API Navigation Is The Only Rescue (lib).")
 	}
@@ -138,7 +140,7 @@ function JANITOR() {
 
 
 /**
- * Add tree nodes of given type from given URL to given parent.
+ * Add tree nodes of given type from given URL to given parent in navigation area.
  */
 function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName) {
 	if (DEV) console.debug("addModulesOrPackages():", ofType +"(s)", "in", parentName === '' ? "API" : "module " + parentName, "from", fromURL, "to", toParent)
@@ -221,7 +223,7 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
 
 
 /**
- * Add tree nodes of given type from given URL to given parent.
+ * Add tree nodes of given type from given URL to given parent in navigation area.
  */
 function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount ) {
 	if (DEV) console.debug("addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent, "count:", typeCount)
