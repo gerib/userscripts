@@ -82,7 +82,7 @@ const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
 const VIEWPORT_HEIGHT = Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28
 const VIEWPORT_HALF = VIEWPORT_HEIGHT >>> 1
 
-JANITOR() // for developing
+// JANITOR() // for developing
 
 function JANITOR() {
 
@@ -109,7 +109,7 @@ function JANITOR() {
 
         const show = document.createElement('a')
         show.href = '#'
-        show.innerText = "<< "
+        show.innerText = "<<"
         show.title = "Hide JANITOR"
         show.style.paddingRight = '8px'
         show.style.float = 'right'
@@ -130,7 +130,7 @@ function JANITOR() {
                 footer.style.marginLeft = NAV_WIDTH_HIDE
             }
             else {
-                show.innerText= "<< "
+                show.innerText= "<<"
                 show.title = "Hide JANITOR"
                 show.style.paddingRight = '8px'
                 a.style.display = 'inline'
