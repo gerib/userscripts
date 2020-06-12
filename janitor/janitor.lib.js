@@ -30,7 +30,9 @@
  *
  *   <body>
  *     <div id="JANITOR" style="display: flex;">
- *     | <div style="position: fixed; width: ${NAV_WIDTH};">{title}
+ *     | <div id="title" style="position: fixed; width: ${NAV_WIDTH};">
+ *     |   <a>{title}
+ *     |   <a>{show}
  *     | <div id="nav" style="position: fixed; width: ${NAV_WIDTH};">
  *     |   <details>*¹ | <div>*²
  *     |     <summary>*¹ | <span>*²
@@ -59,85 +61,131 @@
 
 // ----------------------------------------------------------------------------------------
 // Customize to your liking
-const NAV_WIDTH = '30em'
 const TYPE_LETTERS_IN_CIRCLE = true
 const COLORS = new Map(
-		[['Module',"black"],['Package',"purple"],['Interface',"dodgerblue"],['Class',"blue"],
-		['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] )
+    [['Module',"black"],['Package',"purple"],['Interface',"dodgerblue"],['Class',"blue"],
+     ['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] )
 // ----------------------------------------------------------------------------------------
 
+const NAV_WIDTH = '30em'
+const NAV_WIDTH_HIDE = '2em'
 const DEV = false // set to »true« while developing
 const DEBUG = false // set to »true« for debugging
 const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length )
 const ASYNC = true
 const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
-		? [['Module',"Ⓜ"],['Package',"Ⓟ"],['Interface',"Ⓘ"],['Class',"Ⓒ"],['Enum',"Ⓔ<sub>n</sub>"],
-		   ['Exception',"Ⓔ<sub>x</sub>"],['Error',"Ⓔ<sub>r</sub>"],['Annotation',"Ⓐ"]]
-		: [['Module',"M"],['Package',"P"],['Interface',"I"],['Class',"C"],['Enum',"E<sub>n</sub>"],
-		   ['Exception',"E<sub>x</sub>"],['Error',"E<sub>r</sub>"],['Annotation',"A"]] )
+                      ? [['Module',"Ⓜ"],['Package',"Ⓟ"],['Interface',"Ⓘ"],['Class',"Ⓒ"],['Enum',"Ⓔ<sub>n</sub>"],
+                         ['Exception',"Ⓔ<sub>x</sub>"],['Error',"Ⓔ<sub>r</sub>"],['Annotation',"Ⓐ"]]
+                      : [['Module',"M"],['Package',"P"],['Interface',"I"],['Class',"C"],['Enum',"E<sub>n</sub>"],
+                         ['Exception',"E<sub>x</sub>"],['Error',"E<sub>r</sub>"],['Annotation',"A"]] )
 // See 'How to get the browser viewport dimensions?' <https://stackoverflow.com/a/8876069/1744774>
 const VIEWPORT_HEIGHT = Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28
 const VIEWPORT_HALF = VIEWPORT_HEIGHT >>> 1
 
-//JANITOR() // for developing
+JANITOR() // for developing
 
 function JANITOR() {
 
-	try {
-		console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue (lib)...")
+    try {
+        console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue (lib)...")
 
-		// Create navigation tree
-		const janitor = document.createElement('div')
-		janitor.id = 'JANITOR'
+        // Create navigation tree
+        const janitor = document.createElement('div')
+        janitor.id = 'JANITOR'
 
-		const title = document.createElement('div')
-		title.style.position = 'fixed'
-		title.style.width = NAV_WIDTH
-		title.style.borderBottom = '1px solid'
-		title.style.padding = '3px'
-		title.style.textAlign = 'center'
+        const title = document.createElement('div')
+        title.id = 'title'
+        title.style.position = 'fixed'
+        title.style.width = NAV_WIDTH
+        title.style.borderBottom = '1px solid'
+        title.style.padding = '3px'
+        title.style.textAlign = 'center'
 
-		const a = document.createElement('a')
-		a.href = 'https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue'
-		a.innerText = "JANITOR – Java API Navigation Is The Only Rescue"
-		a.title = "JANITOR – Java API Navigation Is The Only Rescue"
+        const a = document.createElement('a')
+        a.href = 'https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue'
+        a.target="_blank"
+        a.innerText = "JANITOR – Java API Navigation Is The Only Rescue"
+        a.title = "JANITOR – Java API Navigation Is The Only Rescue"
 
-		title.appendChild( a )
-		janitor.appendChild( title )
+        const show = document.createElement('a')
+        show.href = '#'
+        show.innerText = "<< "
+        show.title = "Hide JANITOR"
+        show.style.paddingRight = '8px'
+        show.style.float = 'right'
+        show.onclick = function() {
+            if (navigation.style.width == NAV_WIDTH) {
+                show.innerText= ">>"
+                show.title = "Show JANITOR"
+                show.style.paddingRight = '5px'
+                a.style.display = 'none'
+                navigation.style.display = 'none'
 
-		const navigation = document.createElement('div')
-		navigation.id = 'nav'
-		navigation.style.width = NAV_WIDTH
-		navigation.style.height = `${VIEWPORT_HEIGHT}px`
-		navigation.style.top = '24px'
-		navigation.style.position = 'fixed'
-		// navigation.style.borderRight = '1px solid'
-		navigation.style.overflowY = 'scroll'
-		navigation.style.paddingTop = '3px'
-		janitor.appendChild( navigation )
+                title.style.width = NAV_WIDTH_HIDE
+                navigation.style.width = NAV_WIDTH_HIDE
+                header.style.marginLeft = NAV_WIDTH_HIDE
+                if ( h1 )
+                    h1.style.marginLeft = NAV_WIDTH_HIDE
+                main.style.marginLeft = NAV_WIDTH_HIDE
+                footer.style.marginLeft = NAV_WIDTH_HIDE
+            }
+            else {
+                show.innerText= "<< "
+                show.title = "Hide JANITOR"
+                show.style.paddingRight = '8px'
+                a.style.display = 'inline'
+                navigation.style.display = 'block'
 
-		// Rearrange existing elements
-		const header = document.getElementsByTagName('header')[0]
-		header.style.marginLeft = NAV_WIDTH
-	  	const h1 = document.querySelector('body > div.header') // for Java 11 Overview page
-		if ( h1 )
-			h1.style.marginLeft = NAV_WIDTH
-		let nav = document.querySelector('div.fixedNav') // for Java <=13
-		if ( nav )
-			document.querySelector('div.fixedNav').style.width = 'auto'
-		document.getElementsByTagName('main')[0].style.marginLeft = NAV_WIDTH
-		document.getElementsByTagName('footer')[0].style.marginLeft = NAV_WIDTH
+                title.style.width = NAV_WIDTH
+                navigation.style.width = NAV_WIDTH
+                header.style.marginLeft = NAV_WIDTH
+                if ( h1 )
+                    h1.style.marginLeft = NAV_WIDTH
+                main.style.marginLeft = NAV_WIDTH
+                footer.style.marginLeft = NAV_WIDTH
+            }
+            return false;
+        }
 
-   		// Add navigation to DOM
-		header.parentNode.insertBefore(janitor, header)
+        title.appendChild( a )
+        title.appendChild( show )
+        janitor.appendChild( title )
 
-		addModulesOrPackages( 'Module', navigation, API_URL, navigation, '' )
+        const navigation = document.createElement('div')
+        navigation.id = 'nav'
+        navigation.style.width = NAV_WIDTH
+        navigation.style.height = `${VIEWPORT_HEIGHT}px`
+        navigation.style.top = '24px'
+        navigation.style.position = 'fixed'
+        // navigation.style.borderRight = '1px solid'
+        navigation.style.overflowY = 'scroll'
+        navigation.style.paddingTop = '3px'
+        janitor.appendChild( navigation )
 
-		console.log("END JANITOR – Java API Navigation Is The Only Rescue (lib).")
-	}
-	catch (e) {
-		console.error(e)
-	}
+        // Rearrange existing elements
+        const header = document.getElementsByTagName('header')[0]
+        header.style.marginLeft = NAV_WIDTH
+        const h1 = document.querySelector('body > div.header') // for Java 11 Overview page
+        if ( h1 )
+            h1.style.marginLeft = NAV_WIDTH
+        let nav = document.querySelector('div.fixedNav') // for Java <=13
+        if ( nav )
+            document.querySelector('div.fixedNav').style.width = 'auto'
+        const main = document.getElementsByTagName('main')[0]
+        main.style.marginLeft = NAV_WIDTH
+        const footer = document.getElementsByTagName('footer')[0]
+        footer.style.marginLeft = NAV_WIDTH
+
+        // Add navigation to DOM
+        header.parentNode.insertBefore(janitor, header)
+
+        addModulesOrPackages( 'Module', navigation, API_URL, navigation, '' )
+
+        console.log("END JANITOR – Java API Navigation Is The Only Rescue (lib).")
+    }
+    catch (e) {
+        console.error(e)
+    }
 
 } // JANITOR()
 
@@ -146,81 +194,81 @@ function JANITOR() {
  * Add tree nodes of given type from given URL to given parent in navigation area.
  */
 function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName) {
-	if (DEV) console.debug("addModulesOrPackages():", ofType +"(s)", "in", parentName === '' ? "API" : "module " + parentName, "from", fromURL, "to", toParent)
+    if (DEV) console.debug("addModulesOrPackages():", ofType +"(s)", "in", parentName === '' ? "API" : "module " + parentName, "from", fromURL, "to", toParent)
 
-	const types = "'Module', 'Package'"
-	if ( types.search( ofType ) < 0 )
-		throw `function addModulesOrPackages(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`
+    const types = "'Module', 'Package'"
+    if ( types.search( ofType ) < 0 )
+        throw `function addModulesOrPackages(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`
 
-	const page = new XMLHttpRequest()
-	page.addEventListener( 'load', function(event) {
-		if (DEBUG) console.debug(event)
-		if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)
+    const page = new XMLHttpRequest()
+    page.addEventListener( 'load', function(event) {
+        if (DEBUG) console.debug(event)
+        if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)
 
-		// responseXML == null with error message:
-		//   XML-Error: Not matching tag. Expected: </script>.
-		//   Line No. xx, Column yyy
-		// therefore creating a new document from responseText
-		const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
-		doc.open()
-		doc.write( page.responseText )
-		doc.close()
+        // responseXML == null with error message:
+        //   XML-Error: Not matching tag. Expected: </script>.
+        //   Line No. xx, Column yyy
+        // therefore creating a new document from responseText
+        const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
+        doc.open()
+        doc.write( page.responseText )
+        doc.close()
 
-		// CSS selector for links <ofType> on page denoted by <fromURL>
-		let selector
-		if ( ofType === 'Package' || parentName === "java.se" )
-			// see 'CSS selector for first element with class' <https://stackoverflow.com/a/40390132/1744774>
-			selector = '.packagesSummary:first-of-type th > a' // Java 11: <table>, Java 12+: <div>
-		else
-			selector ='.overviewSummary th > a' // Java 11: <table>, Java 12+: <div>
+        // CSS selector for links <ofType> on page denoted by <fromURL>
+        let selector
+        if ( ofType === 'Package' || parentName === "java.se" )
+            // see 'CSS selector for first element with class' <https://stackoverflow.com/a/40390132/1744774>
+            selector = '.packagesSummary:first-of-type th > a' // Java 11: <table>, Java 12+: <div>
+        else
+            selector ='.overviewSummary th > a' // Java 11: <table>, Java 12+: <div>
 
-		const links = doc.querySelectorAll(`${selector}`)
-		let nodeCount = links.length
-		if (DEV) console.debug("Links for", ofType + "(s) in", parentName === '' ? "API" : "module " + parentName, links)
+        const links = doc.querySelectorAll(`${selector}`)
+        let nodeCount = links.length
+        if (DEV) console.debug("Links for", ofType + "(s) in", parentName === '' ? "API" : "module " + parentName, links)
 
-		for ( let link of links ) {
+        for ( let link of links ) {
 
-			let branch = `<span style='color:${COLORS.get( ofType )};'>${ICONS.get( ofType )}</span>`
-			if ( ofType === 'Package' || parentName === "java.se" )
-				branch = `${parentName === "java.se" ? "&nbsp; &nbsp;" : ""}${--nodeCount > 0 ? "├" : "└"}─ ${branch}`
+            let branch = `<span style='color:${COLORS.get( ofType )};'>${ICONS.get( ofType )}</span>`
+            if ( ofType === 'Package' || parentName === "java.se" )
+                branch = `${parentName === "java.se" ? "&nbsp; &nbsp;" : ""}${--nodeCount > 0 ? "├" : "└"}─ ${branch}`
 
-			const details = parentName === "java.se" ? document.createElement('div') : document.createElement('details')
-			const summary = parentName === "java.se" ? document.createElement('span') : document.createElement('summary')
-			const a = link
-			//a.href = `${API_URL}/${ parentName === "java.se" ? "" : parentName + "/"}${a.getAttribute('href')}`
-			a.href = `${API_URL}/${parentName + "/"}${a.getAttribute('href')}`
-			a.title = `${ofType} ${a.innerText}`
-			summary.innerHTML = `<span title="${a.title}" style="cursor: default;">${branch} &nbsp;</span>`
+            const details = parentName === "java.se" ? document.createElement('div') : document.createElement('details')
+            const summary = parentName === "java.se" ? document.createElement('span') : document.createElement('summary')
+            const a = link
+            //a.href = `${API_URL}/${ parentName === "java.se" ? "" : parentName + "/"}${a.getAttribute('href')}`
+            a.href = `${API_URL}/${parentName + "/"}${a.getAttribute('href')}`
+            a.title = `${ofType} ${a.innerText}`
+            summary.innerHTML = `<span title="${a.title}" style="cursor: default;">${branch} &nbsp;</span>`
 
-			if ( parentName !== "java.se" )
-				summary.addEventListener( 'click', function() {
-					ofType === 'Module'
-						? a.innerText === 'java.se'
-							? addModulesOrPackages( 'Module', navigation, a.href, details, a.innerText )
-							: addModulesOrPackages( 'Package', navigation, a.href, details, a.innerText )
-						: addTypes( 'Interface', navigation, a.href, details, parentName, a.innerText, -1, 0, "" )
-				}, { once:true } )
+            if ( parentName !== "java.se" )
+                summary.addEventListener( 'click', function() {
+                    ofType === 'Module'
+                        ? a.innerText === 'java.se'
+                        ? addModulesOrPackages( 'Module', navigation, a.href, details, a.innerText )
+                    : addModulesOrPackages( 'Package', navigation, a.href, details, a.innerText )
+                    : addTypes( 'Interface', navigation, a.href, details, parentName, a.innerText, -1, 0, "" )
+                }, { once:true } )
 
-			summary.appendChild( a )
-			details.appendChild( summary )
-			toParent.appendChild( details )
+            summary.appendChild( a )
+            details.appendChild( summary )
+            toParent.appendChild( details )
 
-			// open and highlight navigation tree of current page
-			if ( document.URL.includes( `${a.innerText}/` ) || // module
-			     document.URL.includes( `${a.innerText.replace(/\./g, "/")}/p` ) // package
-			   ) {
-				summary.style.fontWeight = 'bold'
-				summary.click()
-				navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 2 )
-			}
-			const span = document.querySelector('span.packageLabelInType')
-			if ( span && span.parentNode.lastChild.innerHTML === a.innerText )
-				summary.click()
+            // open and highlight navigation tree of current page
+            if ( document.URL.includes( `${a.innerText}/` ) || // module
+                document.URL.includes( `${a.innerText.replace(/\./g, "/")}/p` ) // package
+               ) {
+                summary.style.fontWeight = 'bold'
+                summary.click()
+                navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 2 )
+            }
+            const span = document.querySelector('span.packageLabelInType')
+            if ( span && span.parentNode.lastChild.innerHTML === a.innerText )
+                summary.click()
 
-		} // for ( links )
-	}) // page load listener
-	page.open('GET', fromURL, ASYNC )
-	page.send()
+        } // for ( links )
+    }) // page load listener
+    page.open('GET', fromURL, ASYNC )
+    page.send()
 
 } // addModulesOrPackages()
 
@@ -229,86 +277,86 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
  * Add tree nodes of given type from given URL to given parent in navigation area.
  */
 function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount ) {
-	if (DEV) console.debug("addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent, "count:", typeCount)
+    if (DEV) console.debug("addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent, "count:", typeCount)
 
-	const types = "'Interface', 'Class', 'Enum', 'Exception', 'Error', 'Annotation'"
-	if ( types.search( ofType ) < 0 )
-		throw `function addTypes(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`
+    const types = "'Interface', 'Class', 'Enum', 'Exception', 'Error', 'Annotation'"
+    if ( types.search( ofType ) < 0 )
+        throw `function addTypes(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`
 
-	const page = new XMLHttpRequest()
-	page.addEventListener('load', function( event ) {
-		if (DEBUG) console.debug(event)
-		if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)
+    const page = new XMLHttpRequest()
+    page.addEventListener('load', function( event ) {
+        if (DEBUG) console.debug(event)
+        if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)
 
-		// responseXML == null with error message:
-		//   XML-Error: Not matching tag. Expected: </script>.
-		//   Line No. xx, Column yyy
-		// therefore creating a new document from responseText
-		const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
-		doc.open()
-		doc.write( page.responseText )
-		doc.close()
+        // responseXML == null with error message:
+        //   XML-Error: Not matching tag. Expected: </script>.
+        //   Line No. xx, Column yyy
+        // therefore creating a new document from responseText
+        const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
+        doc.open()
+        doc.write( page.responseText )
+        doc.close()
 
-		if ( typeCount < 0 )
-			typeCount = doc.querySelectorAll('.typeSummary th > a').length
+        if ( typeCount < 0 )
+            typeCount = doc.querySelectorAll('.typeSummary th > a').length
 
-		// Used to select different type sections (Interface, Class, Enum, Exception, Error, Annotation) below
-		// since there's still no CSS selector for <innerText>.
-		for ( const span of doc.querySelectorAll('table > caption > span') )
-			span.setAttribute('type', span.innerText)
-		const span = doc.querySelector(`table > caption > span[type^="${ofType}"]`)
+        // Used to select different type sections (Interface, Class, Enum, Exception, Error, Annotation) below
+        // since there's still no CSS selector for <innerText>.
+        for ( const span of doc.querySelectorAll('table > caption > span') )
+            span.setAttribute('type', span.innerText)
+        const span = doc.querySelector(`table > caption > span[type^="${ofType}"]`)
 
-		if ( span ) {
-			const links = span.parentNode.parentNode.querySelectorAll('tbody > tr > th > a')
-			//            span< caption  < table
-			if (DEV) console.debug("addTypes(): Links for", ofType + "s in", moduleName + "/" + packageName, links)
+        if ( span ) {
+            const links = span.parentNode.parentNode.querySelectorAll('tbody > tr > th > a')
+            //            span< caption  < table
+            if (DEV) console.debug("addTypes(): Links for", ofType + "s in", moduleName + "/" + packageName, links)
 
-			let previousTypeName = null
-			for ( const link of links ) {
+            let previousTypeName = null
+            for ( const link of links ) {
 
-				if ( link.innerText === previousTypeName ) {
-					typeCount--
-					continue
-				}
+                if ( link.innerText === previousTypeName ) {
+                    typeCount--
+                    continue
+                }
 
-				const details = document.createElement('div')
-				const summary = document.createElement('span')
-				const a = link
-				a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.getAttribute('href')}`
-				a.title = `${ofType} ${a.innerText}`
-				const highlight = document.URL.includes( `/${a.innerText}.html` )
-				const icon = `<span style='color:${COLORS.get( ofType )};${highlight ? 'font-weight:bold': ''}'>${ICONS.get( ofType )}</span>`
-				const branch = `&nbsp; &nbsp; ･&nbsp; &nbsp;&thinsp;${--typeCount > 0 ? "├" : "└"}─ ${icon}`
-				summary.innerHTML = `<span title='${a.title}' style='cursor:default;'>${branch} &nbsp;</span>`
+                const details = document.createElement('div')
+                const summary = document.createElement('span')
+                const a = link
+                a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.getAttribute('href')}`
+                a.title = `${ofType} ${a.innerText}`
+                const highlight = document.URL.includes( `/${a.innerText}.html` )
+                const icon = `<span style='color:${COLORS.get( ofType )};${highlight ? 'font-weight:bold': ''}'>${ICONS.get( ofType )}</span>`
+                const branch = `&nbsp; &nbsp; ･&nbsp; &nbsp;&thinsp;${--typeCount > 0 ? "├" : "└"}─ ${icon}`
+                summary.innerHTML = `<span title='${a.title}' style='cursor:default;'>${branch} &nbsp;</span>`
 
-				summary.appendChild( a )
-				details.appendChild( summary )
-				toParent.appendChild( details )
+                summary.appendChild( a )
+                details.appendChild( summary )
+                toParent.appendChild( details )
 
-				// highlight tree of current type page
-				if ( highlight ) {
-					details.parentNode.firstChild.style.fontWeight = 'bold'
-					a.style.fontWeight = 'bold'
-					navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 2 )
-				}
-				previousTypeName = a.innerText
+                // highlight tree of current type page
+                if ( highlight ) {
+                    details.parentNode.firstChild.style.fontWeight = 'bold'
+                    a.style.fontWeight = 'bold'
+                    navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 2 )
+                }
+                previousTypeName = a.innerText
 
-			} // for ( links )
-		} // if ( section <ofType> exists )
+            } // for ( links )
+        } // if ( section <ofType> exists )
 
-		if ( ofType === 'Interface' )
-			addTypes( 'Class', navigation, fromURL, toParent, moduleName, packageName, typeCount )
-		else if ( ofType === 'Class' )
-			addTypes( 'Enum', navigation, fromURL, toParent, moduleName, packageName, typeCount )
-		else if ( ofType === 'Enum' )
-			addTypes( 'Exception', navigation, fromURL, toParent, moduleName, packageName, typeCount)
-		else if ( ofType === 'Exception' )
-			addTypes( 'Error', navigation, fromURL, toParent, moduleName, packageName, typeCount )
-		else if ( ofType === 'Error' )
-			addTypes( 'Annotation', navigation, fromURL, toParent, moduleName, packageName, typeCount )
+        if ( ofType === 'Interface' )
+            addTypes( 'Class', navigation, fromURL, toParent, moduleName, packageName, typeCount )
+        else if ( ofType === 'Class' )
+            addTypes( 'Enum', navigation, fromURL, toParent, moduleName, packageName, typeCount )
+        else if ( ofType === 'Enum' )
+            addTypes( 'Exception', navigation, fromURL, toParent, moduleName, packageName, typeCount)
+        else if ( ofType === 'Exception' )
+            addTypes( 'Error', navigation, fromURL, toParent, moduleName, packageName, typeCount )
+        else if ( ofType === 'Error' )
+            addTypes( 'Annotation', navigation, fromURL, toParent, moduleName, packageName, typeCount )
 
-	}) // page load listener
-	page.open('GET', fromURL, ASYNC )
-	page.send()
+    }) // page load listener
+    page.open('GET', fromURL, ASYNC )
+    page.send()
 
 } // addTypes()
