@@ -71,8 +71,8 @@ const COLORS = new Map(
 
 const NAV_WIDTH = '30em'
 const NAV_WIDTH_HIDE = '2em'
-const DEV = true // set to »true« while developing
-const DEBUG = true // set to »true« for debugging
+const DEV = false // set to »true« while developing
+const DEBUG = false // set to »true« for debugging
 const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length )
 const ASYNC = true
 const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
