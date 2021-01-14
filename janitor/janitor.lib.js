@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue (lib)
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     20.06.12-2345
+// @version     21.01.14-2341
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -51,6 +51,8 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
+ *   - Correct box drawing characters for types.
+ *   - Display childs of module java.se.
  *   - If a package has the same name as its enclosing module (e.g. Ⓜ java.sql > Ⓟ java.sql)
  *     * the module (and package) is not expanded if a type of the package is selected
  *     * the package is wrongly expanded if a type of a sibling package (e.g. Ⓟ javax.sql) is selected
@@ -69,8 +71,8 @@ const COLORS = new Map(
 
 const NAV_WIDTH = '30em'
 const NAV_WIDTH_HIDE = '2em'
-const DEV = false // set to »true« while developing
-const DEBUG = false // set to »true« for debugging
+const DEV = true // set to »true« while developing
+const DEBUG = true // set to »true« for debugging
 const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length )
 const ASYNC = true
 const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
@@ -82,7 +84,7 @@ const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
 const VIEWPORT_HEIGHT = Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28
 const VIEWPORT_HALF = VIEWPORT_HEIGHT >>> 1
 
-// JANITOR() // for developing
+//JANITOR() // for developing
 
 function JANITOR() {
 
@@ -109,7 +111,7 @@ function JANITOR() {
 
         const show = document.createElement('a')
         show.href = '#'
-        show.innerText = "<<"
+        show.innerText = "<< "
         show.title = "Hide JANITOR"
         show.style.paddingRight = '8px'
         show.style.float = 'right'
@@ -130,7 +132,7 @@ function JANITOR() {
                 footer.style.marginLeft = NAV_WIDTH_HIDE
             }
             else {
-                show.innerText= "<<"
+                show.innerText= "<< "
                 show.title = "Hide JANITOR"
                 show.style.paddingRight = '8px'
                 a.style.display = 'inline'
@@ -194,7 +196,7 @@ function JANITOR() {
  * Add tree nodes of given type from given URL to given parent in navigation area.
  */
 function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName) {
-    if (DEV) console.debug("addModulesOrPackages():", ofType +"(s)", "in", parentName === '' ? "API" : "module " + parentName, "from", fromURL, "to", toParent)
+    if (DEV) console.debug("→ addModulesOrPackages(): adding ", ofType +"(s)", "in", parentName === '' ? "API" : "module " + parentName, "from", fromURL, "to", toParent.id === 'nav' ? 'navigation' : toParent)
 
     const types = "'Module', 'Package'"
     if ( types.search( ofType ) < 0 )
@@ -202,8 +204,8 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
 
     const page = new XMLHttpRequest()
     page.addEventListener( 'load', function(event) {
-        if (DEBUG) console.debug(event)
-        if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)
+        if (DEBUG) console.debug("→ event:", event)
+        if (DEBUG) console.debug("→ statusText:", page.statusText, "→ responseType:", page.responseType, "→ responseText:", page.responseText, "→ responseXML:", page.responseXML)
 
         // responseXML == null with error message:
         //   XML-Error: Not matching tag. Expected: </script>.
@@ -216,15 +218,21 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
 
         // CSS selector for links <ofType> on page denoted by <fromURL>
         let selector
-        if ( ofType === 'Package' || parentName === "java.se" )
+        if ( ofType === 'Package' || parentName === "java.se" ) {
             // see 'CSS selector for first element with class' <https://stackoverflow.com/a/40390132/1744774>
-            selector = '.packagesSummary:first-of-type th > a' // Java 11: <table>, Java 12+: <div>
-        else
-            selector ='.overviewSummary th > a' // Java 11: <table>, Java 12+: <div>
+            selector = '.packagesSummary:first-of-type th > a' // Java 11: <table>, Java 12-14: <div>
+			if ( fromURL.includes("javase/15/docs") )
+				selector ='.summary-table:first-of-type th > a' // Java 15: <table class="summary-table">
+			}
+        else {
+            selector ='.overviewSummary th > a' // Java 11: <table>, Java 12-14: <div>
+			if ( fromURL.includes("javase/15/docs") )
+				selector ='.summary-table th > a' // Java 15: <table class="summary-table">
+			}
 
         const links = doc.querySelectorAll(`${selector}`)
         let nodeCount = links.length
-        if (DEV) console.debug("Links for", ofType + "(s) in", parentName === '' ? "API" : "module " + parentName, links)
+        if (DEV) console.debug("→ selector: " + selector + " → "+ nodeCount + " links for", ofType + "(s) in", parentName === '' ? "API" : "module " + parentName, links)
 
         for ( let link of links ) {
 
@@ -277,7 +285,7 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
  * Add tree nodes of given type from given URL to given parent in navigation area.
  */
 function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount ) {
-    if (DEV) console.debug("addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent, "count:", typeCount)
+    if (DEV) console.debug("addTypes():", typeCount, ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent)
 
     const types = "'Interface', 'Class', 'Enum', 'Exception', 'Error', 'Annotation'"
     if ( types.search( ofType ) < 0 )
@@ -309,7 +317,7 @@ function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageNam
         if ( span ) {
             const links = span.parentNode.parentNode.querySelectorAll('tbody > tr > th > a')
             //            span< caption  < table
-            if (DEV) console.debug("addTypes(): Links for", ofType + "s in", moduleName + "/" + packageName, links)
+            if (DEV) console.debug("addTypes():", links.length, "link(s) for", ofType + "s in", moduleName + "/" + packageName, links)
 
             let previousTypeName = null
             for ( const link of links ) {
