@@ -332,7 +332,7 @@ function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageNam
                     typeCount--
                     continue
                 }
-console.debug("typeCount="+typeCount)
+
                 const details = document.createElement('div')
                 const summary = document.createElement('span')
                 const a = link
