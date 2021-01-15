@@ -21,6 +21,9 @@
 (function() {
 	'use strict'
 
+	console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue...")
+
 	JANITOR()
 
+	console.log("END JANITOR – Java API Navigation Is The Only Rescue.")
 })()
