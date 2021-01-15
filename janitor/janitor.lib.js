@@ -51,8 +51,6 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
- *   - Correct box drawing characters for types.
- *   - Display childs of module java.se.
  *   - If a package has the same name as its enclosing module (e.g. Ⓜ java.sql > Ⓟ java.sql)
  *     * the module (and package) is not expanded if a type of the package is selected
  *     * the package is wrongly expanded if a type of a sibling package (e.g. Ⓟ javax.sql) is selected
@@ -220,19 +218,23 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
         let selector
         if ( ofType === 'Package' || parentName === "java.se" ) {
             // see 'CSS selector for first element with class' <https://stackoverflow.com/a/40390132/1744774>
-            selector = '.packagesSummary:first-of-type th > a' // Java 11: <table>, Java 12-14: <div>
+            selector = '.packagesSummary:first-of-type th > a' // Java 11: <table class="...">, Java 12-14: <div class="..">
 			if ( fromURL.includes("javase/15/docs") )
-				selector ='.summary-table:first-of-type th > a' // Java 15: <table class="summary-table">
-			}
+				if ( parentName === "java.se" )
+					selector ='.details-table:first-of-type th > a' // Java 15: <table class="...">
+				else
+					selector ='.summary-table:first-of-type th > a' // Java 15: <table class="...">
+		}
         else {
-            selector ='.overviewSummary th > a' // Java 11: <table>, Java 12-14: <div>
+            selector ='.overviewSummary th > a' // Java 11: <table class="...">, Java 12-14: <div class="...">
 			if ( fromURL.includes("javase/15/docs") )
-				selector ='.summary-table th > a' // Java 15: <table class="summary-table">
-			}
+				selector ='.summary-table th > a' // Java 15: <table class="...">
+		}
 
         const links = doc.querySelectorAll(`${selector}`)
         let nodeCount = links.length
-        if (DEV) console.debug("→ selector: " + selector + " → "+ nodeCount + " links for", ofType + "(s) in", parentName === '' ? "API" : "module " + parentName, links)
+        if (DEV) console.debug("→ selector: " + selector)
+		if (DEV) console.debug("  → "+ nodeCount + " links for", ofType + "(s) in", parentName === '' ? "API" : "module " + parentName, links)
 
         for ( let link of links ) {
 
@@ -285,7 +287,7 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
  * Add tree nodes of given type from given URL to given parent in navigation area.
  */
 function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount ) {
-    if (DEV) console.debug("addTypes():", typeCount, ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent)
+    if (DEV) console.debug("addTypes():", typeCount < 0 ? "-": typeCount, ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent)
 
     const types = "'Interface', 'Class', 'Enum', 'Exception', 'Error', 'Annotation'"
     if ( types.search( ofType ) < 0 )
@@ -305,8 +307,12 @@ function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageNam
         doc.write( page.responseText )
         doc.close()
 
-        if ( typeCount < 0 )
-            typeCount = doc.querySelectorAll('.typeSummary th > a').length
+        if ( typeCount < 0 ) {
+			if ( fromURL.includes("javase/15/docs") )
+				typeCount = doc.querySelectorAll('.summary-table th > a').length
+			else
+            	typeCount = doc.querySelectorAll('.typeSummary th > a').length
+		}
 
         // Used to select different type sections (Interface, Class, Enum, Exception, Error, Annotation) below
         // since there's still no CSS selector for <innerText>.
@@ -317,7 +323,7 @@ function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageNam
         if ( span ) {
             const links = span.parentNode.parentNode.querySelectorAll('tbody > tr > th > a')
             //            span< caption  < table
-            if (DEV) console.debug("addTypes():", links.length, "link(s) for", ofType + "s in", moduleName + "/" + packageName, links)
+            if (DEV) console.debug("addTypes():", links.length, "link(s) for", ofType + "(s) in", moduleName + "/" + packageName, links)
 
             let previousTypeName = null
             for ( const link of links ) {
@@ -326,7 +332,7 @@ function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageNam
                     typeCount--
                     continue
                 }
-
+console.debug("typeCount="+typeCount)
                 const details = document.createElement('div')
                 const summary = document.createElement('span')
                 const a = link
