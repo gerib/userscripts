@@ -87,7 +87,7 @@ JANITOR()
 function JANITOR() {
 
     try {
-        console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue (lib)...")
+        console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue...")
 
         // Create navigation tree
         const janitor = document.createElement('div')
@@ -181,7 +181,7 @@ function JANITOR() {
 
         addModulesOrPackages( 'Module', navigation, API_URL, navigation, '' )
 
-        console.log("END JANITOR – Java API Navigation Is The Only Rescue (lib).")
+        console.log("END JANITOR – Java API Navigation Is The Only Rescue.")
     }
     catch (e) {
         console.error(e)
