@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     21.01.15-1743
+// @version     21.01.16-2320
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -51,6 +51,7 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
+ *   - Script doesn't run properly in Greasemonkey. See comment in modulesOrPackagesPageLoadListener().
  *   - Add content of modules that don't contain packages but just types, e.g. jdk.crypto.ec
  *   - If a package has the same name as its enclosing module (e.g. Ⓜ java.sql > Ⓟ java.sql)
  *     * the module (and package) is not expanded if a type of the package is selected
@@ -214,14 +215,14 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
 
     const page = new XMLHttpRequest()
     page.addEventListener( 'load', (event) => {
-        pageLoadListener( event, page, ofType, navigation, fromURL, toParent, parentName )
+        modulesOrPackagesPageLoadListener( event, page, ofType, navigation, fromURL, toParent, parentName )
     })
     page.open('GET', fromURL, ASYNC )
     page.send()
 
 } // addModulesOrPackages()
 
-function pageLoadListener( event , page, ofType, navigation, fromURL, toParent, parentName ) {
+function modulesOrPackagesPageLoadListener( event , page, ofType, navigation, fromURL, toParent, parentName ) {
 
     try {
         if (DEBUG) console.debug("→ pageLoadListener() → event:", event)
@@ -305,7 +306,7 @@ console.debug("DOC OPENED")
     catch (e) {
         console.error(e)
     }
-} // pageLoadListener()
+} // modulesOrPackagesPageLoadListener()
 
 /**
  * Add tree nodes of given type from given URL to given parent in navigation area.
