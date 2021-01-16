@@ -70,8 +70,8 @@ const COLORS = new Map(
 
 const NAV_WIDTH = '30em'
 const NAV_WIDTH_HIDE = '2em'
-const DEV = false // set to »true« while developing
-const DEBUG = false // set to »true« for debugging
+const DEV = true // set to »true« while developing
+const DEBUG = true // set to »true« for debugging
 const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length )
 const ASYNC = true
 const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
@@ -89,6 +89,7 @@ function JANITOR() {
 
     try {
         console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue...")
+        console.log( GM.info.scriptHandler)
 
         // Create navigation tree
         const janitor = document.createElement('div')
@@ -102,11 +103,15 @@ function JANITOR() {
         title.style.padding = '3px'
         title.style.textAlign = 'center'
 
-        const a = document.createElement('a')
-        a.href = 'https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue'
-        a.target="_blank"
-        a.innerText = "JANITOR – Java API Navigation Is The Only Rescue"
-        a.title = "JANITOR – Java API Navigation Is The Only Rescue"
+        const link = document.createElement('a')
+        link.href = 'https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue'
+        link.target = "_blank"
+        link.innerText = "JANITOR – Java API Navigation Is The Only Rescue"
+        link.title = "JANITOR – Java API Navigation Is The Only Rescue"
+
+        const refresh = document.createElement('a')
+        refresh.href = '#'
+        refresh.innerText = " ↻"
 
         const show = document.createElement('a')
         show.href = '#'
@@ -119,7 +124,7 @@ function JANITOR() {
                 show.innerText= ">>"
                 show.title = "Show JANITOR"
                 show.style.paddingRight = '5px'
-                a.style.display = 'none'
+                link.style.display = 'none'
                 navigation.style.display = 'none'
 
                 title.style.width = NAV_WIDTH_HIDE
@@ -134,7 +139,7 @@ function JANITOR() {
                 show.innerText= "<< "
                 show.title = "Hide JANITOR"
                 show.style.paddingRight = '8px'
-                a.style.display = 'inline'
+                link.style.display = 'inline'
                 navigation.style.display = 'block'
 
                 title.style.width = NAV_WIDTH
@@ -148,7 +153,8 @@ function JANITOR() {
             return false;
         }
 
-        title.appendChild( a )
+        title.appendChild( link )
+        title.appendChild( refresh )
         title.appendChild( show )
         janitor.appendChild( title )
 
@@ -179,6 +185,10 @@ function JANITOR() {
 
         // Add navigation to DOM
         header.parentNode.insertBefore(janitor, header)
+        refresh.onclick = function() {
+            addModulesOrPackages( "Module", navigation, API_URL, navigation, '' );
+            return false;
+        }
 
         addModulesOrPackages( 'Module', navigation, API_URL, navigation, '' )
 
@@ -194,24 +204,38 @@ function JANITOR() {
 /**
  * Add tree nodes of given type from given URL to given parent in navigation area.
  */
-function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName) {
-    if (DEV) console.debug("→ addModulesOrPackages(): adding ", ofType +"(s)", "in", parentName === '' ? "API" : "module " + parentName, "from", fromURL, "to", toParent.id === 'nav' ? 'navigation' : toParent)
+function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName ) {
+    if (DEV) console.debug("→ addModulesOrPackages() → adding", ofType +"(s)", "in", parentName === '' ? "API" : "module " + parentName,
+                           "from", fromURL, "to", toParent.id === 'nav' ? 'navigation' : toParent)
 
     const types = "'Module', 'Package'"
     if ( types.search( ofType ) < 0 )
         throw `function addModulesOrPackages(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`
 
     const page = new XMLHttpRequest()
-    page.addEventListener( 'load', function(event) {
-        if (DEBUG) console.debug("→ event:", event)
-        if (DEBUG) console.debug("→ statusText:", page.statusText, "→ responseType:", page.responseType, "→ responseText:", page.responseText, "→ responseXML:", page.responseXML)
+    page.addEventListener( 'load', (event) => {
+        pageLoadListener( event, page, ofType, navigation, fromURL, toParent, parentName )
+    })
+    page.open('GET', fromURL, ASYNC )
+    page.send()
+
+} // addModulesOrPackages()
+
+function pageLoadListener( event , page, ofType, navigation, fromURL, toParent, parentName ) {
+
+    try {
+        if (DEBUG) console.debug("→ pageLoadListener() → event:", event)
+        if (DEBUG) console.debug("→ pageLoadListener() → statusText:", page.statusText, "→ responseType:", page.responseType,
+                                 "→ responseText:", page.responseText, "→ responseXML:", page.responseXML)
 
         // responseXML == null with error message:
         //   XML-Error: Not matching tag. Expected: </script>.
         //   Line No. xx, Column yyy
         // therefore creating a new document from responseText
         const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
-        doc.open()
+console.debug("DOC CREATED")
+        doc.open() // <-- with GM: DOMException: The operation is insecure.
+console.debug("DOC OPENED")
         doc.write( page.responseText )
         doc.close()
 
@@ -220,22 +244,22 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
         if ( ofType === 'Package' || parentName === "java.se" ) {
             // see 'CSS selector for first element with class' <https://stackoverflow.com/a/40390132/1744774>
             selector = '.packagesSummary:first-of-type th > a' // Java 11: <table class="...">, Java 12-14: <div class="..">
-			if ( fromURL.includes("javase/15/docs") )
-				if ( parentName === "java.se" )
-					selector ='.details-table:first-of-type th > a' // Java 15: <table class="...">
-				else
-					selector ='.summary-table:first-of-type th > a' // Java 15: <table class="...">
-		}
+            if ( fromURL.includes("javase/15/docs") )
+                if ( parentName === "java.se" )
+                    selector ='.details-table:first-of-type th > a' // Java 15: <table class="...">
+            else
+                selector ='.summary-table:first-of-type th > a' // Java 15: <table class="...">
+        }
         else {
             selector ='.overviewSummary th > a' // Java 11: <table class="...">, Java 12-14: <div class="...">
-			if ( fromURL.includes("javase/15/docs") )
-				selector ='.summary-table th > a' // Java 15: <table class="...">
-		}
+            if ( fromURL.includes("javase/15/docs") )
+                selector ='.summary-table th > a' // Java 15: <table class="...">
+        }
 
         const links = doc.querySelectorAll(`${selector}`)
         let nodeCount = links.length
         if (DEV) console.debug("→ selector: " + selector)
-		if (DEV) console.debug("  → "+ nodeCount + " links for", ofType + "(s) in", parentName === '' ? "API" : "module " + parentName, links)
+        if (DEV) console.debug("  → "+ nodeCount + " links for", ofType + "(s) in", parentName === '' ? "API" : "module " + parentName, links)
 
         for ( let link of links ) {
 
@@ -243,22 +267,22 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
             if ( ofType === 'Package' || parentName === "java.se" )
                 branch = `${parentName === "java.se" ? "&nbsp; &nbsp;" : ""}${--nodeCount > 0 ? "├" : "└"}─ ${branch}`
 
-            const details = parentName === "java.se" ? document.createElement('div') : document.createElement('details')
-            const summary = parentName === "java.se" ? document.createElement('span') : document.createElement('summary')
-            const a = link
-            //a.href = `${API_URL}/${ parentName === "java.se" ? "" : parentName + "/"}${a.getAttribute('href')}`
-            a.href = `${API_URL}/${parentName + "/"}${a.getAttribute('href')}`
-            a.title = `${ofType} ${a.innerText}`
-            summary.innerHTML = `<span title="${a.title}" style="cursor: default;">${branch} &nbsp;</span>`
+                const details = parentName === "java.se" ? document.createElement('div') : document.createElement('details')
+                const summary = parentName === "java.se" ? document.createElement('span') : document.createElement('summary')
+                const a = link
+                //a.href = `${API_URL}/${ parentName === "java.se" ? "" : parentName + "/"}${a.getAttribute('href')}`
+                a.href = `${API_URL}/${parentName + "/"}${a.getAttribute('href')}`
+                a.title = `${ofType} ${a.innerText}`
+                summary.innerHTML = `<span title="${a.title}" style="cursor: default;">${branch} &nbsp;</span>`
 
-            if ( parentName !== "java.se" )
-                summary.addEventListener( 'click', function() {
-                    ofType === 'Module'
-                        ? a.innerText === 'java.se'
-                        ? addModulesOrPackages( 'Module', navigation, a.href, details, a.innerText )
-                    : addModulesOrPackages( 'Package', navigation, a.href, details, a.innerText )
-                    : addTypes( 'Interface', navigation, a.href, details, parentName, a.innerText, -1, 0, "" )
-                }, { once:true } )
+                if ( parentName !== "java.se" )
+                    summary.addEventListener( 'click', function() {
+                        ofType === 'Module'
+                            ? a.innerText === 'java.se'
+                            ? addModulesOrPackages( 'Module', navigation, a.href, details, a.innerText )
+                        : addModulesOrPackages( 'Package', navigation, a.href, details, a.innerText )
+                        : addTypes( 'Interface', navigation, a.href, details, parentName, a.innerText, -1, 0, "" )
+                    }, { once:true } )
 
             summary.appendChild( a )
             details.appendChild( summary )
@@ -277,12 +301,11 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
                 summary.click()
 
         } // for ( links )
-    }) // page load listener
-    page.open('GET', fromURL, ASYNC )
-    page.send()
-
-} // addModulesOrPackages()
-
+    }
+    catch (e) {
+        console.error(e)
+    }
+} // pageLoadListener()
 
 /**
  * Add tree nodes of given type from given URL to given parent in navigation area.
