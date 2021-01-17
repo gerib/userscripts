@@ -76,8 +76,8 @@ const COLORS = new Map(
 
 const NAV_WIDTH = '30em'
 const NAV_WIDTH_HIDE = '2em'
-const DEV = true // set to »true« while developing
-const DEBUG = true // set to »true« for debugging
+const DEV = false // set to »true« while developing
+const DEBUG = false // set to »true« for debugging
 const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length )
 const ASYNC = true
 const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
@@ -109,7 +109,7 @@ function JANITOR() {
         title.style.textAlign = 'center'
 
         const link = document.createElement('a')
-        link.href = 'https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue'
+        link.href = 'https://gitlab.com/gerib/userscripts/-/wikis/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue'
         link.target = "_blank"
         link.innerText = "JANITOR – Java API Navigation Is The Only Rescue"
         link.title = "JANITOR – Java API Navigation Is The Only Rescue"
