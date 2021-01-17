@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     21.01.17-0404
+// @version     21.01.17-1443
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -34,9 +34,11 @@
  *     |   <a>{title}
  *     |   <a>{focus}
  *     |   <a>{show}
+ *     | <!-- not implemented yet
  *     | <div id="filter" style="position: fixed; width: ${NAV_WIDTH};">
  *     |   <label>Filter:
  *     |   <input>{filter}
+ *     | -->
  *     | <div id="nav" style="position: fixed; width: ${NAV_WIDTH};">
  *     |   <details>*¹ | <div>*²
  *     |     <summary>*¹ | <span>*²
@@ -55,7 +57,6 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
- *   - Script doesn't run properly in Greasemonkey. See comment in modulesOrPackagesPageLoadListener().
  *   - Add content of modules that don't contain packages but just types, e.g. jdk.crypto.ec
  *   - If a package has the same name as its enclosing module (e.g. Ⓜ java.sql > Ⓟ java.sql)
  *     * the module (and package) is not expanded if a type of the package is selected
@@ -76,7 +77,7 @@ const COLORS = new Map(
 const NAV_WIDTH = '30em'
 const NAV_WIDTH_HIDE = '2em'
 const DEV = true // set to »true« while developing
-const DEBUG = false // set to »true« for debugging
+const DEBUG = true // set to »true« for debugging
 const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length )
 const ASYNC = true
 const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
@@ -268,25 +269,12 @@ function modulesOrPackagesPageLoadListener( event, page, ofType, navigation, fro
         if (DEBUG) console.debug("→ modulesOrPackagesPageLoadListener() → statusText:", page.statusText, "→ responseType:", page.responseType,
                                  "→ responseText:", page.responseText, "→ responseXML:", page.responseXML)
 
-        if ( GM.info.scriptHandler === 'Greasemonkey' ) {
-            const gm = document.createElement('p')
-            gm.style.textAlign = 'center'
-            gm.innerHTML = "I'm terribly sorry.<br />" +
-              "<span style='color:lightgrey;'>The</span> Greas<span style='color:lightgrey;'>y</span>monkey <span style='color:lightgrey;'>stole the key</span>.<br />" +
-              "I cannot work with<span style='color:lightgrey;'>out</span> it."
-            toParent.appendChild( gm )
-        }
-
         // responseXML == null with error message:
         //   XML-Error: Not matching tag. Expected: </script>.
         //   Line No. xx, Column yyy
         // therefore creating a new document from responseText
         const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
-console.debug("DOC CREATED")
-        doc.open() // <-- with GM: DOMException: The operation is insecure.
-console.debug("DOC OPENED")
-        doc.write( page.responseText )
-        doc.close()
+        doc.documentElement.innerHTML = page.responseText
 
         // CSS selector for links <ofType> on page denoted by <fromURL>
         let selector
