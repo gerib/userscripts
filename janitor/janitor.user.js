@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     21.01.16-2320
+// @version     21.01.17-0330
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -32,7 +32,11 @@
  *     <div id="JANITOR" style="display: flex;">
  *     | <div id="title" style="position: fixed; width: ${NAV_WIDTH};">
  *     |   <a>{title}
+ *     |   <a>{focus}
  *     |   <a>{show}
+ *     | <div id="filter" style="position: fixed; width: ${NAV_WIDTH};">
+ *     |   <label>Filter:
+ *     |   <input>{filter}
  *     | <div id="nav" style="position: fixed; width: ${NAV_WIDTH};">
  *     |   <details>*¹ | <div>*²
  *     |     <summary>*¹ | <span>*²
@@ -72,7 +76,7 @@ const COLORS = new Map(
 const NAV_WIDTH = '30em'
 const NAV_WIDTH_HIDE = '2em'
 const DEV = true // set to »true« while developing
-const DEBUG = true // set to »true« for debugging
+const DEBUG = false // set to »true« for debugging
 const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length )
 const ASYNC = true
 const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
@@ -110,9 +114,11 @@ function JANITOR() {
         link.innerText = "JANITOR – Java API Navigation Is The Only Rescue"
         link.title = "JANITOR – Java API Navigation Is The Only Rescue"
 
-        const refresh = document.createElement('a')
-        refresh.href = '#'
-        refresh.innerText = " ↻"
+        const focus = document.createElement('a')
+        focus.href = '#'
+        focus.title = "Focus JANITOR on current page"
+        focus.innerText = "⇐"
+        focus.style.paddingLeft = '12px'
 
         const show = document.createElement('a')
         show.href = '#'
@@ -125,7 +131,9 @@ function JANITOR() {
                 show.innerText= ">>"
                 show.title = "Show JANITOR"
                 show.style.paddingRight = '5px'
+                focus.style.display = 'none'
                 link.style.display = 'none'
+                filter.style.display = 'none'
                 navigation.style.display = 'none'
 
                 title.style.width = NAV_WIDTH_HIDE
@@ -137,10 +145,12 @@ function JANITOR() {
                 footer.style.marginLeft = NAV_WIDTH_HIDE
             }
             else {
-                show.innerText= "<< "
+                show.innerText= "<<"
                 show.title = "Hide JANITOR"
                 show.style.paddingRight = '8px'
+                focus.style.display = 'inline'
                 link.style.display = 'inline'
+                filter.style.display = 'block'
                 navigation.style.display = 'block'
 
                 title.style.width = NAV_WIDTH
@@ -154,16 +164,38 @@ function JANITOR() {
             return false;
         }
 
+        const filter = document.createElement('div')
+        filter.id = 'filter'
+        filter.style.position = 'fixed'
+        filter.style.width = NAV_WIDTH
+        filter.style.borderBottom = '1px solid'
+        filter.style.paddingLeft = '3px'
+        filter.style.paddingTop = '6px'
+        filter.style.paddingBottom = '1px'
+        filter.style.textAlign = 'left'
+
+        // <label for="fname">First name:</label>
+        // <input type="text" id="fname" name="fname">
+        const label = document.createElement('label')
+        label.for = 'text'
+        label.innerText = "Filter: "
+        filter.appendChild(label)
+
+        const text = document.createElement('input')
+        text.size = '42'
+        filter.appendChild(text)
+
         title.appendChild( link )
-        title.appendChild( refresh )
+        title.appendChild( focus )
         title.appendChild( show )
+        //title.appendChild( filter ) // no filtering atm due to lazy loading
         janitor.appendChild( title )
 
         const navigation = document.createElement('div')
         navigation.id = 'nav'
         navigation.style.width = NAV_WIDTH
         navigation.style.height = `${VIEWPORT_HEIGHT}px`
-        navigation.style.top = '24px'
+        navigation.style.top =  '24px' // with filter: '46px'
         navigation.style.position = 'fixed'
         // navigation.style.borderRight = '1px solid'
         navigation.style.overflowY = 'scroll'
@@ -186,12 +218,20 @@ function JANITOR() {
 
         // Add navigation to DOM
         header.parentNode.insertBefore(janitor, header)
-        refresh.onclick = function() {
-            addModulesOrPackages( "Module", navigation, API_URL, navigation, '' );
+        focus.addEventListener('click', (event) => {
+            while(navigation.firstChild)
+                  navigation.removeChild(navigation.firstChild)
+            addModulesOrPackages( "Module", navigation, API_URL, navigation, '', text );
             return false;
-        }
+        })
+        filter.addEventListener('keyup', (event) => {
+            while(navigation.firstChild)
+                  navigation.removeChild(navigation.firstChild)
+            if ( text.value === "" )
+                addModulesOrPackages( "Module", navigation, API_URL, navigation, '', text );
+        })
 
-        addModulesOrPackages( 'Module', navigation, API_URL, navigation, '' )
+        addModulesOrPackages( 'Module', navigation, API_URL, navigation, '', text )
 
         console.log("END JANITOR – Java API Navigation Is The Only Rescue.")
     }
@@ -205,7 +245,7 @@ function JANITOR() {
 /**
  * Add tree nodes of given type from given URL to given parent in navigation area.
  */
-function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName ) {
+function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName, filterText ) {
     if (DEV) console.debug("→ addModulesOrPackages() → adding", ofType +"(s)", "in", parentName === '' ? "API" : "module " + parentName,
                            "from", fromURL, "to", toParent.id === 'nav' ? 'navigation' : toParent)
 
@@ -215,18 +255,18 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
 
     const page = new XMLHttpRequest()
     page.addEventListener( 'load', (event) => {
-        modulesOrPackagesPageLoadListener( event, page, ofType, navigation, fromURL, toParent, parentName )
+        modulesOrPackagesPageLoadListener( event, page, ofType, navigation, fromURL, toParent, parentName, filterText )
     })
     page.open('GET', fromURL, ASYNC )
     page.send()
 
 } // addModulesOrPackages()
 
-function modulesOrPackagesPageLoadListener( event , page, ofType, navigation, fromURL, toParent, parentName ) {
+function modulesOrPackagesPageLoadListener( event, page, ofType, navigation, fromURL, toParent, parentName, filterText ) {
 
     try {
-        if (DEBUG) console.debug("→ pageLoadListener() → event:", event)
-        if (DEBUG) console.debug("→ pageLoadListener() → statusText:", page.statusText, "→ responseType:", page.responseType,
+        if (DEV) console.debug("→ modulesOrPackagesPageLoadListener() → event:", event)
+        if (DEBUG) console.debug("→ modulesOrPackagesPageLoadListener() → statusText:", page.statusText, "→ responseType:", page.responseType,
                                  "→ responseText:", page.responseText, "→ responseXML:", page.responseXML)
 
         // responseXML == null with error message:
@@ -280,9 +320,9 @@ console.debug("DOC OPENED")
                     summary.addEventListener( 'click', function() {
                         ofType === 'Module'
                             ? a.innerText === 'java.se'
-                            ? addModulesOrPackages( 'Module', navigation, a.href, details, a.innerText )
-                        : addModulesOrPackages( 'Package', navigation, a.href, details, a.innerText )
-                        : addTypes( 'Interface', navigation, a.href, details, parentName, a.innerText, -1, 0, "" )
+                            ? addModulesOrPackages( 'Module', navigation, a.href, details, a.innerText, filterText )
+                        : addModulesOrPackages( 'Package', navigation, a.href, details, a.innerText, filterText )
+                        : addTypes( 'Interface', navigation, a.href, details, parentName, a.innerText, -1, 0, "", filterText )
                     }, { once:true } )
 
             summary.appendChild( a )
@@ -311,7 +351,7 @@ console.debug("DOC OPENED")
 /**
  * Add tree nodes of given type from given URL to given parent in navigation area.
  */
-function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount ) {
+function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText ) {
     if (DEV) console.debug("addTypes():", typeCount < 0 ? "-": typeCount, ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent)
 
     const types = "'Interface', 'Class', 'Enum', 'Exception', 'Error', 'Annotation'"
@@ -319,9 +359,19 @@ function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageNam
         throw `function addTypes(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`
 
     const page = new XMLHttpRequest()
-    page.addEventListener('load', function( event ) {
-        if (DEBUG) console.debug(event)
-        if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)
+    page.addEventListener('load', (event) => {
+        typesPageLoadListener( event, page, ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
+    })
+    page.open('GET', fromURL, ASYNC )
+    page.send()
+
+} // addTypes()
+
+function typesPageLoadListener( event, page, ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText ) {
+
+    try {
+        if (DEV) console.debug("→ typesPageLoadListener() → event:", event)
+        if (DEBUG) console.debug("→ typesPageLoadListener() →", page.statusText, page.responseType, page.responseText, page.responseXML)
 
         // responseXML == null with error message:
         //   XML-Error: Not matching tag. Expected: </script>.
@@ -333,11 +383,11 @@ function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageNam
         doc.close()
 
         if ( typeCount < 0 ) {
-			if ( fromURL.includes("javase/15/docs") )
-				typeCount = doc.querySelectorAll('.summary-table th > a').length
-			else
-            	typeCount = doc.querySelectorAll('.typeSummary th > a').length
-		}
+            if ( fromURL.includes("javase/15/docs") )
+                typeCount = doc.querySelectorAll('.summary-table th > a').length
+            else
+                typeCount = doc.querySelectorAll('.typeSummary th > a').length
+        }
 
         // Used to select different type sections (Interface, Class, Enum, Exception, Error, Annotation) below
         // since there's still no CSS selector for <innerText>.
@@ -353,49 +403,49 @@ function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageNam
             let previousTypeName = null
             for ( const link of links ) {
 
-                if ( link.innerText === previousTypeName ) {
-                    typeCount--
-                    continue
-                }
+                //if ( link.innerText.includes( filterText ) ) {
+                    if ( link.innerText === previousTypeName ) {
+                        typeCount--
+                        continue
+                    }
 
-                const details = document.createElement('div')
-                const summary = document.createElement('span')
-                const a = link
-                a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.getAttribute('href')}`
-                a.title = `${ofType} ${a.innerText}`
-                const highlight = document.URL.includes( `/${a.innerText}.html` )
-                const icon = `<span style='color:${COLORS.get( ofType )};${highlight ? 'font-weight:bold': ''}'>${ICONS.get( ofType )}</span>`
-                const branch = `&nbsp; &nbsp; ･&nbsp; &nbsp;&thinsp;${--typeCount > 0 ? "├" : "└"}─ ${icon}`
-                summary.innerHTML = `<span title='${a.title}' style='cursor:default;'>${branch} &nbsp;</span>`
+                    const details = document.createElement('div')
+                    const summary = document.createElement('span')
+                    const a = link
+                    a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.getAttribute('href')}`
+                    a.title = `${ofType} ${a.innerText}`
+                    const highlight = document.URL.includes( `/${a.innerText}.html` )
+                    const icon = `<span style='color:${COLORS.get( ofType )};${highlight ? 'font-weight:bold': ''}'>${ICONS.get( ofType )}</span>`
+                    const branch = `&nbsp; &nbsp; ･&nbsp; &nbsp;&thinsp;${--typeCount > 0 ? "├" : "└"}─ ${icon}`
+                    summary.innerHTML = `<span title='${a.title}' style='cursor:default;'>${branch} &nbsp;</span>`
 
-                summary.appendChild( a )
-                details.appendChild( summary )
-                toParent.appendChild( details )
+                    summary.appendChild( a )
+                    details.appendChild( summary )
+                    toParent.appendChild( details )
 
-                // highlight tree of current type page
-                if ( highlight ) {
-                    details.parentNode.firstChild.style.fontWeight = 'bold'
-                    a.style.fontWeight = 'bold'
-                    navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 2 )
-                }
-                previousTypeName = a.innerText
-
+                    // highlight tree of current type page
+                    if ( highlight ) {
+                        details.parentNode.firstChild.style.fontWeight = 'bold'
+                        a.style.fontWeight = 'bold'
+                        navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 2 )
+                    }
+                    previousTypeName = a.innerText
+                //} // if ( filterText )
             } // for ( links )
         } // if ( section <ofType> exists )
 
         if ( ofType === 'Interface' )
-            addTypes( 'Class', navigation, fromURL, toParent, moduleName, packageName, typeCount )
+            addTypes( 'Class', navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
         else if ( ofType === 'Class' )
-            addTypes( 'Enum', navigation, fromURL, toParent, moduleName, packageName, typeCount )
+            addTypes( 'Enum', navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
         else if ( ofType === 'Enum' )
-            addTypes( 'Exception', navigation, fromURL, toParent, moduleName, packageName, typeCount)
+            addTypes( 'Exception', navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
         else if ( ofType === 'Exception' )
-            addTypes( 'Error', navigation, fromURL, toParent, moduleName, packageName, typeCount )
+            addTypes( 'Error', navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
         else if ( ofType === 'Error' )
-            addTypes( 'Annotation', navigation, fromURL, toParent, moduleName, packageName, typeCount )
-
-    }) // page load listener
-    page.open('GET', fromURL, ASYNC )
-    page.send()
-
-} // addTypes()
+            addTypes( 'Annotation', navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
+    }
+    catch (e) {
+        console.error(e)
+    }
+} // typesPageLoadListener()
