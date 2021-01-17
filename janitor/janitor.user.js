@@ -374,9 +374,7 @@ function typesPageLoadListener( event, page, ofType, navigation, fromURL, toPare
         //   Line No. xx, Column yyy
         // therefore creating a new document from responseText
         const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
-        doc.open()
-        doc.write( page.responseText )
-        doc.close()
+        doc.documentElement.innerHTML = page.responseText
 
         if ( typeCount < 0 ) {
             if ( fromURL.includes("javase/15/docs") )
