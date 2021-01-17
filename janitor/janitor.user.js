@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     21.01.17-0330
+// @version     21.01.17-0404
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -94,7 +94,6 @@ function JANITOR() {
 
     try {
         console.log("BEGIN JANITOR – Java API Navigation Is The Only Rescue...")
-        console.log( GM.info.scriptHandler)
 
         // Create navigation tree
         const janitor = document.createElement('div')
@@ -268,6 +267,15 @@ function modulesOrPackagesPageLoadListener( event, page, ofType, navigation, fro
         if (DEV) console.debug("→ modulesOrPackagesPageLoadListener() → event:", event)
         if (DEBUG) console.debug("→ modulesOrPackagesPageLoadListener() → statusText:", page.statusText, "→ responseType:", page.responseType,
                                  "→ responseText:", page.responseText, "→ responseXML:", page.responseXML)
+
+        if ( GM.info.scriptHandler === 'Greasemonkey' ) {
+            const gm = document.createElement('p')
+            gm.style.textAlign = 'center'
+            gm.innerHTML = "I'm terribly sorry.<br />" +
+              "<span style='color:lightgrey;'>The</span> Greas<span style='color:lightgrey;'>y</span>monkey <span style='color:lightgrey;'>stole the key</span>.<br />" +
+              "I cannot work with<span style='color:lightgrey;'>out</span> it."
+            toParent.appendChild( gm )
+        }
 
         // responseXML == null with error message:
         //   XML-Error: Not matching tag. Expected: </script>.
