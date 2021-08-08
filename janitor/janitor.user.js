@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     21.01.17-1443
+// @version     21.08.08-0535
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
 // @homepage    https://gitlab.com/gerib/userscripts/-/wikis/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue
 // @supportURL  https://gitlab.com/gerib/userscripts/-/issues
-// @downloadURL https://gitlab.com/gerib/userscripts/-/raw/master/janitor/janitor.user.js
-// @updateURL   https://gitlab.com/gerib/userscripts/-/raw/master/janitor/janitor.user.js
+// @downloadURL https://gitlab.com/gerib/userscripts/-/raw/master/janitor/janitor.lib.js
+// @updateURL   https://gitlab.com/gerib/userscripts/-/raw/master/janitor/janitor.lib.js
 // --------------------------------------------------
 // @namespace   igb
 // @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][0-9]\/docs\/api\/.*/
@@ -17,7 +17,7 @@
 // ==/UserScript==
 
 /**
- * Inspired by 'Missing iFrame view for Javadocs JDK 11+' <https://stackoverflow.com/q/51992347/1744774>.
+ * Inspired by 'Missing iFrame view for Javadocs JDK 11+' at https://stackoverflow.com/q/51992347/1744774 .
  *
  * The original Javadoc page's DOM:
  *
@@ -32,13 +32,7 @@
  *     <div id="JANITOR" style="display: flex;">
  *     | <div id="title" style="position: fixed; width: ${NAV_WIDTH};">
  *     |   <a>{title}
- *     |   <a>{focus}
  *     |   <a>{show}
- *     | <!-- not implemented yet
- *     | <div id="filter" style="position: fixed; width: ${NAV_WIDTH};">
- *     |   <label>Filter:
- *     |   <input>{filter}
- *     | -->
  *     | <div id="nav" style="position: fixed; width: ${NAV_WIDTH};">
  *     |   <details>*¹ | <div>*²
  *     |     <summary>*¹ | <span>*²
@@ -57,12 +51,12 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
- *   - Add content of modules that don't contain packages but just types, e.g. jdk.crypto.ec
+ *   - Add content of modules that don't contain packages but just types, e.g. jdk.crypro.ec
  *   - If a package has the same name as its enclosing module (e.g. Ⓜ java.sql > Ⓟ java.sql)
  *     * the module (and package) is not expanded if a type of the package is selected
  *     * the package is wrongly expanded if a type of a sibling package (e.g. Ⓟ javax.sql) is selected
- *   - Test with other browsers than Firefox v71 and Chrome v79.
- *   - Test with other userscript add-ons than Tampermonkey v4.9.
+ *   - Test with other browsers than Firefox v71 and Chrome v79
+ *   - Test with other userscript add-ons than Tampermonkey v4.9
  */
 'use strict'
 
@@ -78,14 +72,14 @@ const NAV_WIDTH = '30em'
 const NAV_WIDTH_HIDE = '2em'
 const DEV = false // set to »true« while developing
 const DEBUG = false // set to »true« for debugging
-const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + "/api".length )
+const API_URL = document.URL.substring( 0, document.URL.indexOf("/api") + 4 )
 const ASYNC = true
 const ICONS = new Map( TYPE_LETTERS_IN_CIRCLE
                       ? [['Module',"Ⓜ"],['Package',"Ⓟ"],['Interface',"Ⓘ"],['Class',"Ⓒ"],['Enum',"Ⓔ<sub>n</sub>"],
                          ['Exception',"Ⓔ<sub>x</sub>"],['Error',"Ⓔ<sub>r</sub>"],['Annotation',"Ⓐ"]]
                       : [['Module',"M"],['Package',"P"],['Interface',"I"],['Class',"C"],['Enum',"E<sub>n</sub>"],
                          ['Exception',"E<sub>x</sub>"],['Error',"E<sub>r</sub>"],['Annotation',"A"]] )
-// See 'How to get the browser viewport dimensions?' <https://stackoverflow.com/a/8876069/1744774>
+// See 'How to get the browser viewport dimensions?' at https://stackoverflow.com/a/8876069/1744774
 const VIEWPORT_HEIGHT = Math.max(document.documentElement.clientHeight, window.innerHeight || 0) - 28
 const VIEWPORT_HALF = VIEWPORT_HEIGHT >>> 1
 
@@ -108,17 +102,11 @@ function JANITOR() {
         title.style.padding = '3px'
         title.style.textAlign = 'center'
 
-        const link = document.createElement('a')
-        link.href = 'https://gitlab.com/gerib/userscripts/-/wikis/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue'
-        link.target = "_blank"
-        link.innerText = "JANITOR – Java API Navigation Is The Only Rescue"
-        link.title = "JANITOR – Java API Navigation Is The Only Rescue"
-
-        const focus = document.createElement('a')
-        focus.href = '#'
-        focus.title = "Focus JANITOR on current page"
-        focus.innerText = "⇐"
-        focus.style.paddingLeft = '12px'
+        const a = document.createElement('a')
+        a.href = 'https://github.com/gerib/userscripts/wiki/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue'
+        a.target="_blank"
+        a.innerText = "JANITOR – Java API Navigation Is The Only Rescue"
+        a.title = "JANITOR – Java API Navigation Is The Only Rescue"
 
         const show = document.createElement('a')
         show.href = '#'
@@ -131,9 +119,7 @@ function JANITOR() {
                 show.innerText= ">>"
                 show.title = "Show JANITOR"
                 show.style.paddingRight = '5px'
-                focus.style.display = 'none'
-                link.style.display = 'none'
-                filter.style.display = 'none'
+                a.style.display = 'none'
                 navigation.style.display = 'none'
 
                 title.style.width = NAV_WIDTH_HIDE
@@ -145,12 +131,10 @@ function JANITOR() {
                 footer.style.marginLeft = NAV_WIDTH_HIDE
             }
             else {
-                show.innerText= "<<"
+                show.innerText= "<< "
                 show.title = "Hide JANITOR"
                 show.style.paddingRight = '8px'
-                focus.style.display = 'inline'
-                link.style.display = 'inline'
-                filter.style.display = 'block'
+                a.style.display = 'inline'
                 navigation.style.display = 'block'
 
                 title.style.width = NAV_WIDTH
@@ -164,38 +148,15 @@ function JANITOR() {
             return false;
         }
 
-        const filter = document.createElement('div')
-        filter.id = 'filter'
-        filter.style.position = 'fixed'
-        filter.style.width = NAV_WIDTH
-        filter.style.borderBottom = '1px solid'
-        filter.style.paddingLeft = '3px'
-        filter.style.paddingTop = '6px'
-        filter.style.paddingBottom = '1px'
-        filter.style.textAlign = 'left'
-
-        // <label for="fname">First name:</label>
-        // <input type="text" id="fname" name="fname">
-        const label = document.createElement('label')
-        label.for = 'text'
-        label.innerText = "Filter: "
-        filter.appendChild(label)
-
-        const text = document.createElement('input')
-        text.size = '42'
-        filter.appendChild(text)
-
-        title.appendChild( link )
-        title.appendChild( focus )
+        title.appendChild( a )
         title.appendChild( show )
-        //title.appendChild( filter ) // no filtering atm due to lazy loading
         janitor.appendChild( title )
 
         const navigation = document.createElement('div')
         navigation.id = 'nav'
         navigation.style.width = NAV_WIDTH
         navigation.style.height = `${VIEWPORT_HEIGHT}px`
-        navigation.style.top =  '24px' // with filter: '46px'
+        navigation.style.top = '24px'
         navigation.style.position = 'fixed'
         // navigation.style.borderRight = '1px solid'
         navigation.style.overflowY = 'scroll'
@@ -218,20 +179,8 @@ function JANITOR() {
 
         // Add navigation to DOM
         header.parentNode.insertBefore(janitor, header)
-        focus.addEventListener('click', (event) => {
-            while(navigation.firstChild)
-                  navigation.removeChild(navigation.firstChild)
-            addModulesOrPackages( "Module", navigation, API_URL, navigation, '', text );
-            return false;
-        })
-        filter.addEventListener('keyup', (event) => {
-            while(navigation.firstChild)
-                  navigation.removeChild(navigation.firstChild)
-            if ( text.value === "" )
-                addModulesOrPackages( "Module", navigation, API_URL, navigation, '', text );
-        })
 
-        addModulesOrPackages( 'Module', navigation, API_URL, navigation, '', text )
+        addModulesOrPackages( 'Module', navigation, API_URL, navigation, '' )
 
         console.log("END JANITOR – Java API Navigation Is The Only Rescue.")
     }
@@ -245,58 +194,56 @@ function JANITOR() {
 /**
  * Add tree nodes of given type from given URL to given parent in navigation area.
  */
-function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName, filterText ) {
-    if (DEV) console.debug("→ addModulesOrPackages() → adding", ofType +"(s)", "in", parentName === '' ? "API" : "module " + parentName,
-                           "from", fromURL, "to", toParent.id === 'nav' ? 'navigation' : toParent)
+function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName) {
+    if (DEV) console.debug("→ addModulesOrPackages(): adding ", ofType + "(s)", "in", parentName === '' ? "API" : "module " + parentName, "from", fromURL, "to", toParent.id === 'nav' ? 'navigation' : toParent)
 
     const types = "'Module', 'Package'"
     if ( types.search( ofType ) < 0 )
         throw `function addModulesOrPackages(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`
 
     const page = new XMLHttpRequest()
-    page.addEventListener( 'load', (event) => {
-        modulesOrPackagesPageLoadListener( event, page, ofType, navigation, fromURL, toParent, parentName, filterText )
-    })
-    page.open('GET', fromURL, ASYNC )
-    page.send()
-
-} // addModulesOrPackages()
-
-function modulesOrPackagesPageLoadListener( event, page, ofType, navigation, fromURL, toParent, parentName, filterText ) {
-
-    try {
-        if (DEV) console.debug("→ modulesOrPackagesPageLoadListener() → event:", event)
-        if (DEBUG) console.debug("→ modulesOrPackagesPageLoadListener() → statusText:", page.statusText, "→ responseType:", page.responseType,
-                                 "→ responseText:", page.responseText, "→ responseXML:", page.responseXML)
+    page.addEventListener( 'load', function(event) {
+        if (DEBUG) console.debug("→ event:", event)
+        if (DEBUG) console.debug("→ statusText:", page.statusText, "→ responseType:", page.responseType, "→ responseText:", page.responseText, "→ responseXML:", page.responseXML)
 
         // responseXML == null with error message:
         //   XML-Error: Not matching tag. Expected: </script>.
         //   Line No. xx, Column yyy
         // therefore creating a new document from responseText
         const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
-        doc.documentElement.innerHTML = page.responseText
+        doc.open()
+        doc.write( page.responseText )
+        doc.close()
 
         // CSS selector for links <ofType> on page denoted by <fromURL>
         let selector
+		const isJava15 = fromURL.includes("javase/15/docs")
+		const isJava16 = fromURL.includes("javase/16/docs")
         if ( ofType === 'Package' || parentName === "java.se" ) {
-            // see 'CSS selector for first element with class' <https://stackoverflow.com/a/40390132/1744774>
-            selector = '.packagesSummary:first-of-type th > a' // Java 11: <table class="...">, Java 12-14: <div class="..">
-            if ( fromURL.includes("javase/15/docs") )
-                if ( parentName === "java.se" )
-                    selector ='.details-table:first-of-type th > a' // Java 15: <table class="...">
-            else
-                selector ='.summary-table:first-of-type th > a' // Java 15: <table class="...">
-        }
+            selector = '.packagesSummary th > a' // Java 11: table.packagesSummary, Java 12-14: div.packagesSummary
+			if ( isJava15 )
+				if ( parentName === "java.se" )
+					selector = 'table.details-table th > a'
+				else
+					selector = 'table.summary-table th > a'
+			if ( isJava16 )
+				if ( parentName === "java.se" )
+					selector = 'div.details-table div > a'
+				else
+					selector = 'div.summary-table div > a'
+		}
         else {
-            selector ='.overviewSummary th > a' // Java 11: <table class="...">, Java 12-14: <div class="...">
-            if ( fromURL.includes("javase/15/docs") )
-                selector ='.summary-table th > a' // Java 15: <table class="...">
-        }
+            selector = '.overviewSummary th > a' // Java 11: table.overviewSummary, Java 12-14: div.overviewSummary
+			if ( isJava15 )
+				selector = 'table.summary-table th > a'
+			else if ( isJava16 )
+				selector = 'div.summary-table div > a'
+		}
 
         const links = doc.querySelectorAll(`${selector}`)
         let nodeCount = links.length
-        if (DEV) console.debug("→ selector: " + selector)
-        if (DEV) console.debug("  → "+ nodeCount + " links for", ofType + "(s) in", parentName === '' ? "API" : "module " + parentName, links)
+        if (DEV) console.debug("→ selector: ", selector)
+		if (DEV) console.debug("  →", nodeCount, "link(s) for", ofType + "(s) in", parentName === '' ? "API" : "module " + parentName, links)
 
         for ( let link of links ) {
 
@@ -304,33 +251,38 @@ function modulesOrPackagesPageLoadListener( event, page, ofType, navigation, fro
             if ( ofType === 'Package' || parentName === "java.se" )
                 branch = `${parentName === "java.se" ? "&nbsp; &nbsp;" : ""}${--nodeCount > 0 ? "├" : "└"}─ ${branch}`
 
-                const details = parentName === "java.se" ? document.createElement('div') : document.createElement('details')
-                const summary = parentName === "java.se" ? document.createElement('span') : document.createElement('summary')
-                const a = link
-                //a.href = `${API_URL}/${ parentName === "java.se" ? "" : parentName + "/"}${a.getAttribute('href')}`
-                a.href = `${API_URL}/${parentName + "/"}${a.getAttribute('href')}`
-                a.title = `${ofType} ${a.innerText}`
-                summary.innerHTML = `<span title="${a.title}" style="cursor: default;">${branch} &nbsp;</span>`
+            const details = parentName === "java.se" ? document.createElement('div') : document.createElement('details')
+            const summary = parentName === "java.se" ? document.createElement('span') : document.createElement('summary')
+            const a = link
+            //a.href = `${API_URL}/${ parentName === "java.se" ? "" : parentName + "/"}${a.getAttribute('href')}`
+            a.href = `${API_URL}/${parentName + "/"}${a.getAttribute('href')}`
+            a.title = `${ofType} ${a.innerText}`
+            summary.innerHTML = `<span title="${a.title}" style="cursor: default;">${branch} &nbsp;</span>`
 
-                if ( parentName !== "java.se" )
-                    summary.addEventListener( 'click', function() {
-                        ofType === 'Module'
-                            ? a.innerText === 'java.se'
-                            ? addModulesOrPackages( 'Module', navigation, a.href, details, a.innerText, filterText )
-                        : addModulesOrPackages( 'Package', navigation, a.href, details, a.innerText, filterText )
-                        : addTypes( 'Interface', navigation, a.href, details, parentName, a.innerText, -1, 0, "", filterText )
-                    }, { once:true } )
+            if ( parentName !== "java.se" )
+                summary.addEventListener( 'click', function() {
+                    ofType === 'Module'
+                        ? a.innerText === 'java.se'
+                        ? addModulesOrPackages( 'Module', navigation, a.href, details, a.innerText )
+                    : addModulesOrPackages( 'Package', navigation, a.href, details, a.innerText )
+                    : addTypes( 'Interface', navigation, a.href, details, parentName, a.innerText, -1 )
+                }, { once:true } )
 
             summary.appendChild( a )
             details.appendChild( summary )
             toParent.appendChild( details )
 
-            // open and highlight navigation tree of current page
+			const isJava15 = fromURL.includes("javase/15/docs")
+			const isJava16 = fromURL.includes("javase/16/docs")
+
+            // expand and highlight navigation tree of current module or package page
+			// didn't find out yet why the following is needed, but otherwise tree expansion doesn't work on type pages
+			let postfix = isJava15 || isJava16 ? "" : "package"
             if ( document.URL.includes( `${a.innerText}/` ) || // module
-                document.URL.includes( `${a.innerText.replace(/\./g, "/")}/p` ) // package
+                document.URL.includes( `${a.innerText.replace(/\./g, "/")}/${postfix}` )
                ) {
                 summary.style.fontWeight = 'bold'
-                summary.click()
+				summary.click()
                 navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 2 )
             }
             const span = document.querySelector('span.packageLabelInType')
@@ -338,108 +290,113 @@ function modulesOrPackagesPageLoadListener( event, page, ofType, navigation, fro
                 summary.click()
 
         } // for ( links )
-    }
-    catch (e) {
-        console.error(e)
-    }
-} // modulesOrPackagesPageLoadListener()
+    }) // page load listener
+    page.open('GET', fromURL, ASYNC )
+    page.send()
+
+} // addModulesOrPackages()
+
 
 /**
  * Add tree nodes of given type from given URL to given parent in navigation area.
+ *
+ * @param classTypesCount Number of types per class. Has to be -1 at first call of addTypes().
  */
-function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText ) {
-    if (DEV) console.debug("addTypes():", typeCount < 0 ? "-": typeCount, ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent)
+function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageName, classTypesCount ) {
+    if (DEV) console.debug("→ addTypes():", ofType +"(s)", "for", moduleName + "/" + packageName, "from", fromURL, "to", toParent)
 
     const types = "'Interface', 'Class', 'Enum', 'Exception', 'Error', 'Annotation'"
     if ( types.search( ofType ) < 0 )
         throw `function addTypes(): Illegal argument ofType='${ofType}'. Only ${types} allowed.`
 
     const page = new XMLHttpRequest()
-    page.addEventListener('load', (event) => {
-        typesPageLoadListener( event, page, ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
-    })
-    page.open('GET', fromURL, ASYNC )
-    page.send()
-
-} // addTypes()
-
-function typesPageLoadListener( event, page, ofType, navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText ) {
-
-    try {
-        if (DEV) console.debug("→ typesPageLoadListener() → event:", event)
-        if (DEBUG) console.debug("→ typesPageLoadListener() →", page.statusText, page.responseType, page.responseText, page.responseXML)
+    page.addEventListener('load', function( event ) {
+        if (DEBUG) console.debug(event)
+        if (DEBUG) console.debug(page.statusText, page.responseType, page.responseText, page.responseXML)
 
         // responseXML == null with error message:
         //   XML-Error: Not matching tag. Expected: </script>.
         //   Line No. xx, Column yyy
         // therefore creating a new document from responseText
         const doc = document.implementation.createHTMLDocument('http://www.w3.org/1999/xhtml', 'html');
-        doc.documentElement.innerHTML = page.responseText
+        doc.open()
+        doc.write( page.responseText )
+        doc.close()
 
-        if ( typeCount < 0 ) {
-            if ( fromURL.includes("javase/15/docs") )
-                typeCount = doc.querySelectorAll('.summary-table th > a').length
-            else
-                typeCount = doc.querySelectorAll('.typeSummary th > a').length
-        }
+		const isJava15 = fromURL.includes("javase/15/docs")
+		const isJava16 = fromURL.includes("javase/16/docs")
 
-        // Used to select different type sections (Interface, Class, Enum, Exception, Error, Annotation) below
+		if ( classTypesCount < 0 ) {
+		  classTypesCount = doc.querySelectorAll('.typeSummary th > a').length // Java 11-14
+		  if ( isJava15 )
+			  classTypesCount = doc.querySelectorAll('.summary-table th > a').length
+		  else if ( isJava16 ) {
+			  classTypesCount = doc.querySelectorAll('ul div.col-first > a').length
+		  }
+		}
+
+        // Used to select different type section headers (Interface, Class, Enum, Exception, Error, Annotation) below
         // since there's still no CSS selector for <innerText>.
-        for ( const span of doc.querySelectorAll('table > caption > span') )
-            span.setAttribute('type', span.innerText)
-        const span = doc.querySelector(`table > caption > span[type^="${ofType}"]`)
-
-        if ( span ) {
-            const links = span.parentNode.parentNode.querySelectorAll('tbody > tr > th > a')
-            //            span< caption  < table
-            if (DEV) console.debug("addTypes():", links.length, "link(s) for", ofType + "(s) in", moduleName + "/" + packageName, links)
+		let selector = isJava16	? 'div.table-header.col-first' : 'caption > span'
+        for ( const type of doc.querySelectorAll( selector ) )
+			type.setAttribute('type', type.innerText)
+		selector = isJava16	? `div.table-header.col-first[type^="${ofType}"]` : `caption > span[type^="${ofType}"]`
+		const typeSectionHeader = doc.querySelector( selector )
+        if ( typeSectionHeader ) {
+            const links = isJava16
+				? typeSectionHeader.parentNode.querySelectorAll(`div.col-first > a`)
+				//      div.caption<----li----+
+				: typeSectionHeader.parentNode.parentNode.querySelectorAll('th > a')
+            	//             span<-caption--<--table--+
+			if (DEV) console.debug( "→ selector: ", selector )
+            if (DEV) console.debug( "  →", links.length, "link(s) for", ofType + "(s) in", moduleName + "/" + packageName, links)
 
             let previousTypeName = null
             for ( const link of links ) {
 
-                //if ( link.innerText.includes( filterText ) ) {
-                    if ( link.innerText === previousTypeName ) {
-                        typeCount--
-                        continue
-                    }
+                if ( link.innerText === previousTypeName ) {
+                    classTypesCount--
+                    continue
+                }
 
-                    const details = document.createElement('div')
-                    const summary = document.createElement('span')
-                    const a = link
-                    a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.getAttribute('href')}`
-                    a.title = `${ofType} ${a.innerText}`
-                    const highlight = document.URL.includes( `/${a.innerText}.html` )
-                    const icon = `<span style='color:${COLORS.get( ofType )};${highlight ? 'font-weight:bold': ''}'>${ICONS.get( ofType )}</span>`
-                    const branch = `&nbsp; &nbsp; ･&nbsp; &nbsp;&thinsp;${--typeCount > 0 ? "├" : "└"}─ ${icon}`
-                    summary.innerHTML = `<span title='${a.title}' style='cursor:default;'>${branch} &nbsp;</span>`
+                const details = document.createElement('div')
+                const summary = document.createElement('span')
+                const a = link
+                a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.getAttribute('href')}`
+                a.title = `${ofType} ${a.innerText}`
+                const highlight = document.URL.includes( `/${a.innerText}.html` )
+                const icon = `<span style='color:${COLORS.get( ofType )};${highlight ? 'font-weight:bold': ''}'>${ICONS.get( ofType )}</span>`
+                const branch = `&nbsp; &nbsp; ･&nbsp; &nbsp;&thinsp;${--classTypesCount > 0 ? "├" : "└"}─ ${icon}`
+                summary.innerHTML = `<span title='${a.title}' style='cursor:default;'>${branch} &nbsp;</span>`
 
-                    summary.appendChild( a )
-                    details.appendChild( summary )
-                    toParent.appendChild( details )
+                summary.appendChild( a )
+                details.appendChild( summary )
+                toParent.appendChild( details )
 
-                    // highlight tree of current type page
-                    if ( highlight ) {
-                        details.parentNode.firstChild.style.fontWeight = 'bold'
-                        a.style.fontWeight = 'bold'
-                        navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 2 )
-                    }
-                    previousTypeName = a.innerText
-                //} // if ( filterText )
+                // highlight tree item of current type page
+                if ( highlight ) {
+                    details.parentNode.firstChild.style.fontWeight = 'bold'
+                    a.style.fontWeight = 'bold'
+                    navigation.scrollTo( 0, summary.offsetTop - navigation.clientHeight / 2 )
+                }
+                previousTypeName = a.innerText
+
             } // for ( links )
         } // if ( section <ofType> exists )
 
         if ( ofType === 'Interface' )
-            addTypes( 'Class', navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
+            addTypes( 'Class', navigation, fromURL, toParent, moduleName, packageName, classTypesCount )
         else if ( ofType === 'Class' )
-            addTypes( 'Enum', navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
+            addTypes( 'Enum', navigation, fromURL, toParent, moduleName, packageName, classTypesCount )
         else if ( ofType === 'Enum' )
-            addTypes( 'Exception', navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
+            addTypes( 'Exception', navigation, fromURL, toParent, moduleName, packageName, classTypesCount )
         else if ( ofType === 'Exception' )
-            addTypes( 'Error', navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
+            addTypes( 'Error', navigation, fromURL, toParent, moduleName, packageName, classTypesCount )
         else if ( ofType === 'Error' )
-            addTypes( 'Annotation', navigation, fromURL, toParent, moduleName, packageName, typeCount, filterText )
-    }
-    catch (e) {
-        console.error(e)
-    }
-} // typesPageLoadListener()
+            addTypes( 'Annotation', navigation, fromURL, toParent, moduleName, packageName, classTypesCount )
+
+    }) // page load listener
+    page.open('GET', fromURL, ASYNC )
+    page.send()
+
+} // addTypes()
