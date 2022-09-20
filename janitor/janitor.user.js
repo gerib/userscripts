@@ -218,7 +218,8 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
         // CSS selector for links <ofType> on page denoted by <fromURL>
         let selector
 		const isJava15 = fromURL.includes("javase/15/docs")
-		const isJava16 = fromURL.includes("javase/16/docs")
+        const isJava16 = fromURL.includes("javase/16/docs")
+        const isJava17 = fromURL.includes("javase/17/docs")
         if ( ofType === 'Package' || parentName === "java.se" ) {
             selector = '.packagesSummary th > a' // Java 11: table.packagesSummary, Java 12-14: div.packagesSummary
 			if ( isJava15 )
@@ -226,7 +227,7 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
 					selector = 'table.details-table th > a'
 				else
 					selector = 'table.summary-table th > a'
-			if ( isJava16 )
+			if ( isJava16 || isJava17 )
 				if ( parentName === "java.se" )
 					selector = 'div.details-table div > a'
 				else
@@ -236,7 +237,7 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
             selector = '.overviewSummary th > a' // Java 11: table.overviewSummary, Java 12-14: div.overviewSummary
 			if ( isJava15 )
 				selector = 'table.summary-table th > a'
-			else if ( isJava16 )
+			else if ( isJava16 || isJava17 )
 				selector = 'div.summary-table div > a'
 		}
 
@@ -273,11 +274,12 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
             toParent.appendChild( details )
 
 			const isJava15 = fromURL.includes("javase/15/docs")
-			const isJava16 = fromURL.includes("javase/16/docs")
+            const isJava16 = fromURL.includes("javase/16/docs")
+            const isJava17 = fromURL.includes("javase/17/docs")
 
             // expand and highlight navigation tree of current module or package page
 			// didn't find out yet why the following is needed, but otherwise tree expansion doesn't work on type pages
-			let postfix = isJava15 || isJava16 ? "" : "package"
+			let postfix = isJava15 || isJava16 || isJava17 ? "" : "package"
             if ( document.URL.includes( `${a.innerText}/` ) || // module
                 document.URL.includes( `${a.innerText.replace(/\./g, "/")}/${postfix}` )
                ) {
@@ -324,26 +326,27 @@ function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageNam
         doc.close()
 
 		const isJava15 = fromURL.includes("javase/15/docs")
-		const isJava16 = fromURL.includes("javase/16/docs")
+        const isJava16 = fromURL.includes("javase/16/docs")
+        const isJava17 = fromURL.includes("javase/17/docs")
 
 		if ( classTypesCount < 0 ) {
 		  classTypesCount = doc.querySelectorAll('.typeSummary th > a').length // Java 11-14
 		  if ( isJava15 )
 			  classTypesCount = doc.querySelectorAll('.summary-table th > a').length
-		  else if ( isJava16 ) {
+		  else if ( isJava16 || isJava17 ) {
 			  classTypesCount = doc.querySelectorAll('ul div.col-first > a').length
 		  }
 		}
 
         // Used to select different type section headers (Interface, Class, Enum, Exception, Error, Annotation) below
         // since there's still no CSS selector for <innerText>.
-		let selector = isJava16	? 'div.table-header.col-first' : 'caption > span'
+		let selector = isJava16 || isJava17	? 'div.table-header.col-first' : 'caption > span'
         for ( const type of doc.querySelectorAll( selector ) )
 			type.setAttribute('type', type.innerText)
-		selector = isJava16	? `div.table-header.col-first[type^="${ofType}"]` : `caption > span[type^="${ofType}"]`
+		selector = isJava16 || isJava17	? `div.table-header.col-first[type^="${ofType}"]` : `caption > span[type^="${ofType}"]`
 		const typeSectionHeader = doc.querySelector( selector )
         if ( typeSectionHeader ) {
-            const links = isJava16
+            const links = isJava16 || isJava17
 				? typeSectionHeader.parentNode.querySelectorAll(`div.col-first > a`)
 				//      div.caption<----li----+
 				: typeSectionHeader.parentNode.parentNode.querySelectorAll('th > a')
