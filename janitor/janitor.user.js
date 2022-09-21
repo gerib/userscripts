@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     22.09.21-2323
+// @version     22.09.21-2342
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -30,12 +30,12 @@
  *
  *   <body>
  *     <div id="JANITOR" style="display: flex;">
- *     | <div id="title" style="position: fixed; width: ${NAV_WIDTH};">
+ *     | <div id="janitor.title" style="position: fixed; width: ${NAV_WIDTH};">
  *     |   <a>{title}
  *     |   <a>{show}
- *     | <div id="nav" style="position: fixed; width: ${NAV_WIDTH};">
- *     |   <details>*¹ | <div>*²
- *     |     <summary>*¹ | <span>*²
+ *     | <div id="janitor.navigation" style="position: fixed; width: ${NAV_WIDTH};">
+ *     |   <details id="janitor.mod.pkg.details">*¹ | <div id="janitor.type.details">*²
+ *     |     <summary id="janitor.mod.pkg.summary">*¹ | <span id="janitor.type.summary">*²
  *     |       <span>{branch}
  *     |         <span>{icon}
  *     |           <a href='{module, package or type page}'>{module, package or type name}</a>
