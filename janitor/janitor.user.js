@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     22.09.21-2233
+// @version     22.09.21-2323
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
 // @homepage    https://gitlab.com/gerib/userscripts/-/wikis/JANITOR-%E2%80%93-Java-API-Navigation-Is-The-Only-Rescue
 // @supportURL  https://gitlab.com/gerib/userscripts/-/issues
-// @downloadURL https://gitlab.com/gerib/userscripts/-/raw/master/janitor/janitor.user.js
-// @updateURL   https://gitlab.com/gerib/userscripts/-/raw/master/janitor/janitor.user.js
+// @downloadURL https://gitlab.com/gerib/userscripts/-/raw/master/janitor/janitor.lib.js
+// @updateURL   https://gitlab.com/gerib/userscripts/-/raw/master/janitor/janitor.lib.js
 // @ ------------------------------------------------------------------------------------
 // @namespace   igb
 // @match       http*://docs.oracle.com/en/java/javase/*/docs/api/*
@@ -64,7 +64,11 @@
 
 // ----------------------------------------------------------------------------------------
 // Customize to your liking
-const TYPE_LETTERS_IN_CIRCLE = false // changed default to <false> since with at least FF 104 the circled letters are rendered ludicrously large
+const TYPE_LETTERS_IN_CIRCLE = false // Changed default to »false« since on openSUSE Tumbleweed:
+                                     // - with FF 104.0.2 the circled letters are rendered ludicrously large
+                                     // - with Opera 91.0.4516.16 and Chromium 105.0.5195.127 the circled
+                                     //   letters are rendered ludicrously small
+                                     // - the font height of the circled letters is way to large compared to the latin letters
 const COLORS = new Map(
     [['Module',"black"],['Package',"purple"],['Interface',"dodgerblue"],['Class',"blue"],
      ['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] )
