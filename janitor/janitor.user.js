@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        JANITOR – Java API Navigation Is The Only Rescue
 // @description Inserts a navigation tree for modules, packages and types (interfaces, classes, enums, exceptions, errors, annotations) into the Javadoc pages of Java 11+.
-// @version     21.08.08-0535
+// @version     22.09.21-2233
 // @author      Gerold 'Geri' Broser <https://stackoverflow.com/users/1744774>
 // @icon        https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Faenza-openjdk-6.svg/96px-Faenza-openjdk-6.svg.png
 // @license     GNU GPLv3 <http://www.gnu.org/licenses/gpl-3.0.html>
@@ -9,9 +9,9 @@
 // @supportURL  https://gitlab.com/gerib/userscripts/-/issues
 // @downloadURL https://gitlab.com/gerib/userscripts/-/raw/master/janitor/janitor.lib.js
 // @updateURL   https://gitlab.com/gerib/userscripts/-/raw/master/janitor/janitor.lib.js
-// --------------------------------------------------
+// @ ------------------------------------------------------------------------------------
 // @namespace   igb
-// @include     /https:\/\/docs\.oracle\.com\/en\/java\/javase\/[1-9][0-9]\/docs\/api\/.*/
+// @match       http*://docs.oracle.com/en/java/javase/*/docs/api/*
 // @run-at      document-idle
 // @grant       none
 // ==/UserScript==
@@ -51,18 +51,20 @@
  * @see '<div> with absolute position in the viewport when scrolling the page vertically' <https://stackoverflow.com/q/59417589/1744774>
  *
  * TODO
- *   - Add content of modules that don't contain packages but just types, e.g. jdk.crypro.ec
+ *   - On Java 17 doc pages all types are recognized as Ⓒ only (no Ⓘ, Ⓔn, Ⓔr, Ⓔx, Ⓐ) due to the new tabbed type lists
+ *   - Add content of modules that don't contain packages but just types, e.g. jdk.crypto.ec
  *   - If a package has the same name as its enclosing module (e.g. Ⓜ java.sql > Ⓟ java.sql)
- *     * the module (and package) is not expanded if a type of the package is selected
- *     * the package is wrongly expanded if a type of a sibling package (e.g. Ⓟ javax.sql) is selected
- *   - Test with other browsers than Firefox v71 and Chrome v79
- *   - Test with other userscript add-ons than Tampermonkey v4.9
+ *     - the module (and package) is not expanded if a type of the package is selected
+ *     - the package is wrongly expanded if a type of a sibling package (e.g. Ⓟ javax.sql) is selected
+ *   - If the selected package is a sub-package (e.g. java.lang.*) also the super-package (e.g. java.lang) is expanded (and highlighted) due the same string their names begin with
+ *   - Test with other browsers than Firefox v104 and Chrome v79
+ *   - Test with other userscript add-ons than Tampermonkey v4.17
  */
 'use strict'
 
 // ----------------------------------------------------------------------------------------
 // Customize to your liking
-const TYPE_LETTERS_IN_CIRCLE = true
+const TYPE_LETTERS_IN_CIRCLE = false // changed default to <false> since with at least FF 104 the circled letters are rendered ludicrously large
 const COLORS = new Map(
     [['Module',"black"],['Package',"purple"],['Interface',"dodgerblue"],['Class',"blue"],
      ['Enum',"green"],['Exception',"orange"],['Error',"red"],['Annotation',"brown"]] )
@@ -95,7 +97,7 @@ function JANITOR() {
         janitor.id = 'JANITOR'
 
         const title = document.createElement('div')
-        title.id = 'title'
+        title.id = 'janitor.title'
         title.style.position = 'fixed'
         title.style.width = NAV_WIDTH
         title.style.borderBottom = '1px solid'
@@ -153,7 +155,7 @@ function JANITOR() {
         janitor.appendChild( title )
 
         const navigation = document.createElement('div')
-        navigation.id = 'nav'
+        navigation.id = 'janitor.navigation'
         navigation.style.width = NAV_WIDTH
         navigation.style.height = `${VIEWPORT_HEIGHT}px`
         navigation.style.top = '24px'
@@ -253,12 +255,14 @@ function addModulesOrPackages( ofType, navigation, fromURL, toParent, parentName
                 branch = `${parentName === "java.se" ? "&nbsp; &nbsp;" : ""}${--nodeCount > 0 ? "├" : "└"}─ ${branch}`
 
             const details = parentName === "java.se" ? document.createElement('div') : document.createElement('details')
+            details.id = 'janitor.mod.pkg.details'
             const summary = parentName === "java.se" ? document.createElement('span') : document.createElement('summary')
+            summary.id = 'janitor.mod.pkg.summary'
             const a = link
             //a.href = `${API_URL}/${ parentName === "java.se" ? "" : parentName + "/"}${a.getAttribute('href')}`
             a.href = `${API_URL}/${parentName + "/"}${a.getAttribute('href')}`
             a.title = `${ofType} ${a.innerText}`
-            summary.innerHTML = `<span title="${a.title}" style="cursor: default;">${branch} &nbsp;</span>`
+            summary.innerHTML = `<span title="${a.title}" style="cursor: default;">${branch}&nbsp;&nbsp;</span>`
 
             if ( parentName !== "java.se" )
                 summary.addEventListener( 'click', function() {
@@ -363,14 +367,16 @@ function addTypes( ofType, navigation, fromURL, toParent, moduleName, packageNam
                 }
 
                 const details = document.createElement('div')
+                details.id = 'janitor.type.details'
                 const summary = document.createElement('span')
+                summary.id = 'janitor.type.summary'
                 const a = link
                 a.href = `${API_URL}/${moduleName}/${packageName.replace(/\./g, "/")}/${a.getAttribute('href')}`
                 a.title = `${ofType} ${a.innerText}`
                 const highlight = document.URL.includes( `/${a.innerText}.html` )
                 const icon = `<span style='color:${COLORS.get( ofType )};${highlight ? 'font-weight:bold': ''}'>${ICONS.get( ofType )}</span>`
-                const branch = `&nbsp; &nbsp; ･&nbsp; &nbsp;&thinsp;${--classTypesCount > 0 ? "├" : "└"}─ ${icon}`
-                summary.innerHTML = `<span title='${a.title}' style='cursor:default;'>${branch} &nbsp;</span>`
+                const branch = `&nbsp; &nbsp; ·&nbsp; &nbsp;&thinsp;${--classTypesCount > 0 ? "├" : "└"}─ ${icon}`
+                summary.innerHTML = `<span title='${a.title}' style='cursor:default;'>${branch}&nbsp;&nbsp;</span>`
 
                 summary.appendChild( a )
                 details.appendChild( summary )
